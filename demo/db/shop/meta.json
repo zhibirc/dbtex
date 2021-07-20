@@ -8,13 +8,15 @@
             "name": "customers",
             "files": 1,
             "creationDate": 1624101517954,
-            "lastEntryDate": 1626791708488
+            "lastEntryDate": 1626791708488,
+            "schema": {}
         },
         {
             "name": "products",
             "files": 3,
             "creationDate": 1626791537944,
-            "lastEntryDate": 1626791701488
+            "lastEntryDate": 1626791701488,
+            "schema": {}
         }
     ]
 }

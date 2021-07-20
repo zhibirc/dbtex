@@ -1,6 +1,8 @@
 import path from 'path';
 import fs from 'fs';
 import { Config } from './interfaces/config';
+import { Meta } from './interfaces/meta';
+import { Table } from './interfaces/table';
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from './constants/exit-codes';
 import { META_INFO_FILE_NAME } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
@@ -8,7 +10,7 @@ import { isFileStructureAccessable } from './utilities/file-stat';
 
 export class DbTex {
     private _config: Config;
-    private _tables: string[];
+    private _tables: Table[];
 
     constructor ( config: Config ) {
         this._config = config;
@@ -29,13 +31,15 @@ export class DbTex {
         }
     }
 
-    private _init ( metaInfo: object ) {
+    private _init ( metaInfo: Meta | Config ) {
+        // @ts-ignore
         this._tables.concat(metaInfo.tables || []);
     }
 
-    static audit ( metaInfo ) {
-
-    }
+    /**
+     * Check meta information file for validity.
+     */
+    static audit ( metaInfo: Meta ) {}
 
     createTable ( name: string ) {}
 
@@ -52,6 +56,6 @@ export class DbTex {
         // 2
 
         // 3
-        this._tables = this._tables.filter(table => table !== name);
+        this._tables = this._tables.filter(table => table.name !== name);
     }
 }

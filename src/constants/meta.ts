@@ -1,1 +1,1 @@
-export const META_DB_PREFIX = 'meta_dbtex_';
+export const META_INFO_FILE_NAME = 'meta.json';

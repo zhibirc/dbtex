@@ -8,18 +8,22 @@ export interface Config {
      */
     directory: string,
     /**
-     * Arbitrary identifier to distinguish of database files, usually a table name.
+     * Database name.
+     */
+    name: string,
+    /**
+     * Arbitrary identifier to distinguish of database tables, usually a table name.
      * @example
      * {
      *     prefix: 'customers'
      * }
      */
-    prefix: string,
+    prefix?: string,
     /**
      * Specify file size limit for splitting large files, by default they are not split.
      * @example
      * {
-     *     fileSizeLimit: '1Mb'
+     *     fileSizeLimit: '1MB'
      * }
      */
     fileSizeLimit?: number | string,

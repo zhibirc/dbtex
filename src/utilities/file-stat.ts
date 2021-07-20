@@ -8,7 +8,7 @@ import fs from 'fs';
  *
  * @example
  * [
- *     '/home/zhibirc/projects/app/db/shop/meta_dbtex_shop_1626774110908',
+ *     '/home/zhibirc/projects/app/db/shop/meta.json',
  *     '/home/zhibirc/projects/app/db/shop/customers',
  *     '/home/zhibirc/projects/app/db/shop/products'
  * ]
@@ -16,14 +16,14 @@ import fs from 'fs';
  * @example
  * {
  *     '/home/zhibirc/projects/app/db/shop': {
- *         meta_dbtex_shop_1626774110908: null
+ *         'meta.json': null
  *     }
  * }
  *
  * @example
  * {
  *     '/home/zhibirc/projects/app/db/shop': [
- *         'meta_dbtex_shop_1626774110908'
+ *         'meta.json',
  *         'customers',
  *         'products'
  *     ]

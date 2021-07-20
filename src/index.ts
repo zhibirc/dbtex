@@ -1,31 +1,40 @@
+import path from 'path';
+import fs from 'fs';
 import { Config } from './interfaces/config';
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from './constants/exit-codes';
-import { META_DB_PREFIX } from './constants/meta';
+import { META_INFO_FILE_NAME } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
 
 
 export class DbTex {
-    private config: Config;
-    private tables: string[];
+    private _config: Config;
+    private _tables: string[];
 
     constructor ( config: Config ) {
-        this.config = config;
+        this._config = config;
+
+        const fullPath = path.join(config.directory, config.name);
+
+        // try to use existent database from persistent storage instead of creating new instance
+        if ( isFileStructureAccessable({
+            [fullPath]: {
+                [META_INFO_FILE_NAME]: null
+            }
+        }) ) {
+            const meta: string = fs.readFileSync(path.join(fullPath, META_INFO_FILE_NAME), 'utf8');
+
+            this._init(JSON.parse(meta));
+        } else {
+            this._init(config);
+        }
     }
 
-    /**
-     * Use existent database from persistent storage instead of creating new instance.
-     * Engine should validate given database firstly and exit with appropriate status.
-     */
-    static use ( name: string ): number {
-        if ( /*
-            1) directory of given database is exists.
-            2) directory of given database contains meta information file.
-            3) if success initialize inner structures with database info.
-        */ ) {
-            return EXIT_CODE_SUCCESS;
-        }
+    private _init ( metaInfo: object ) {
+        this._tables.concat(metaInfo.tables || []);
+    }
 
-        return EXIT_CODE_FAILURE;
+    static audit ( metaInfo ) {
+
     }
 
     createTable ( name: string ) {}
@@ -43,6 +52,6 @@ export class DbTex {
         // 2
 
         // 3
-        this.tables = this.tables.filter(table => table !== name);
+        this._tables = this._tables.filter(table => table !== name);
     }
 }

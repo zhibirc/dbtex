@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
-import { Table } from './interfaces/table';
+import {save} from './utilities/save';
 import { serialize, deserialize } from './utilities/serialize';
 import { convertToBytes } from './utilities/unit-converters';
 import { AccessError } from './errors/access';
@@ -11,49 +11,47 @@ import { isFileStructureAccessable } from './utilities/file-stat';
 
 
 export class DbTex {
-    private _config: Config;
-    private _tables: Table[];
+    private readonly _dbPath: string;
+    private readonly _config: Meta;
 
     constructor ( config: Config ) {
-        this._config = config;
-
-        const fullPath = path.join(config.directory, config.name);
+        this._dbPath = path.join(config.directory, config.name);
 
         // try to use existent database from persistent storage instead of creating new instance
         if ( isFileStructureAccessable({
-            [fullPath]: {
+            [this._dbPath]: {
                 [META_INFO_FILE_NAME]: null
             }
         }) ) {
-            const meta: string = fs.readFileSync(path.join(fullPath, META_INFO_FILE_NAME), 'utf8');
+            const meta: string = fs.readFileSync(path.join(this._dbPath, META_INFO_FILE_NAME), 'utf8');
 
-            this._init(deserialize(meta) as Meta, true);
+            this._init(this._config = deserialize(meta) as Meta, true);
         } else {
-            this._init(config, false);
+            this._init(this._config = {...config, tables: []}, false);
         }
     }
 
-    private _init ( config: Meta | Config, exist: boolean ) {
+    private _init ( config: Meta, exist: boolean ) {
         const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = config;
+
         if ( exist ) {
-            // @ts-ignore
-            this._tables.concat(tables || []);
+
         } else {
             if ( isFileStructureAccessable(directory) ) {
                 try {
-                    fs.mkdirSync(path.join(directory, name));
+                    fs.mkdirSync(this._dbPath);
                     fs.writeFileSync(
-                        path.join(directory, name, META_INFO_FILE_NAME),
+                        path.join(this._dbPath, META_INFO_FILE_NAME),
                         serialize({
                             directory,
                             name,
                             fileSizeLimit: convertToBytes(fileSizeLimit),
                             encrypt,
-                            tables: []
+                            tables
                         })
                     );
                 } catch ( error ) {
-
+                    throw new Error(error.message);
                 }
             } else {
                 throw new AccessError(config.directory);
@@ -69,18 +67,15 @@ export class DbTex {
     createTable ( name: string ) {}
 
     dropTable ( name: string ) {
-        /*
-            There are 3 steps here:
+        const tablePath = path.join(this._dbPath, name);
 
-            1) Delete corresponding file/files (depending on if there is one file or not).
-            2) Remove entry from meta-information about database.
-            3) Remove entry from 'tables' private field.
-        */
-        // 1
+        try {
+            fs.unlinkSync(tablePath);
+        } catch ( error ) {
+            throw new AccessError(tablePath);
+        }
 
-        // 2
-
-        // 3
-        this._tables = this._tables.filter(table => table.name !== name);
+        this._config.tables = this._config.tables.filter(table => table.name !== name);
+        save(this._config, path.join(tablePath, META_INFO_FILE_NAME));
     }
 }

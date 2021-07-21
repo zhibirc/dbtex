@@ -10,15 +10,17 @@
     },
     "keywords": [
         "database",
-        "CRUD"
+        "CRUD",
+        "flat-file",
+        "flat-file database"
     ],
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "devDependencies": {
         "@tsconfig/node14": "~1.0.1",
         "@types/chai": "~4.2.18",
         "@types/mocha": "~8.2.2",
-        "@types/node": "^16.3.3",
+        "@types/node": "~16.3.3",
         "@typescript-eslint/parser": "~4.26.0",
         "chai": "~4.3.4",
         "eslint": "~7.27.0",

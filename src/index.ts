@@ -3,7 +3,8 @@ import fs from 'fs';
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
 import { Table } from './interfaces/table';
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from './constants/exit-codes';
+import { deserialize } from './utilities/serialize';
+import { AccessError } from './errors/access';
 import { META_INFO_FILE_NAME } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
 
@@ -25,21 +26,29 @@ export class DbTex {
         }) ) {
             const meta: string = fs.readFileSync(path.join(fullPath, META_INFO_FILE_NAME), 'utf8');
 
-            this._init(JSON.parse(meta));
+            this._init(deserialize(meta) as Meta, true);
         } else {
-            this._init(config);
+            this._init(config, false);
         }
     }
 
-    private _init ( metaInfo: Meta | Config ) {
-        // @ts-ignore
-        this._tables.concat(metaInfo.tables || []);
+    private _init ( config: Meta | Config, exist: boolean ) {
+        if ( exist ) {
+            // @ts-ignore
+            this._tables.concat(config.tables || []);
+        } else {
+            if ( isFileStructureAccessable(config.directory) ) {
+                // TODO: create and fulfill required file structures
+            } else {
+                throw new AccessError(config.directory);
+            }
+        }
     }
 
     /**
      * Check meta information file for validity.
      */
-    static audit ( metaInfo: Meta ) {}
+    static audit ( config: Meta ) {}
 
     createTable ( name: string ) {}
 

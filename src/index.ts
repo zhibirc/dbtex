@@ -3,9 +3,10 @@ import fs from 'fs';
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
 import { Table } from './interfaces/table';
-import { deserialize } from './utilities/serialize';
+import { serialize, deserialize } from './utilities/serialize';
+import { convertToBytes } from './utilities/unit-converters';
 import { AccessError } from './errors/access';
-import { META_INFO_FILE_NAME } from './constants/meta';
+import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
 
 
@@ -33,12 +34,27 @@ export class DbTex {
     }
 
     private _init ( config: Meta | Config, exist: boolean ) {
+        const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = config;
         if ( exist ) {
             // @ts-ignore
-            this._tables.concat(config.tables || []);
+            this._tables.concat(tables || []);
         } else {
-            if ( isFileStructureAccessable(config.directory) ) {
-                // TODO: create and fulfill required file structures
+            if ( isFileStructureAccessable(directory) ) {
+                try {
+                    fs.mkdirSync(path.join(directory, name));
+                    fs.writeFileSync(
+                        path.join(directory, name, META_INFO_FILE_NAME),
+                        serialize({
+                            directory,
+                            name,
+                            fileSizeLimit: convertToBytes(fileSizeLimit),
+                            encrypt,
+                            tables: []
+                        })
+                    );
+                } catch ( error ) {
+
+                }
             } else {
                 throw new AccessError(config.directory);
             }

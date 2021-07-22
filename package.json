@@ -1,21 +1,23 @@
 {
     "name": "dbtex",
-    "version": "1.0.0",
+    "productName": "DBTEX",
     "description": "",
-    "main": "index.js",
+    "version": "1.0.0",
+    "author": {
+        "name": "Yaroslav Surilov",
+        "email": "zhibirc.echo@gmail.com",
+        "url": "http://test.directory/"
+    },
+    "license": "MIT",
+    "engines": {
+        "node": ">=14.16.0"
+    },
+    "main": "build/index.js",
     "scripts": {
         "test": "mocha --check-leaks --require tsconfig-paths/register --require ts-node/register tests/spec.ts",
-        "build": "tsc -p .",
-        "start": "npm run build && node build/index.js"
+        "prepare": "tsc -p .",
+        "start": "npm run prepare && node build/index.js"
     },
-    "keywords": [
-        "database",
-        "CRUD",
-        "flat-file",
-        "flat-file database"
-    ],
-    "author": "",
-    "license": "MIT",
     "devDependencies": {
         "@tsconfig/node14": "~1.0.1",
         "@types/chai": "~4.2.18",
@@ -28,5 +30,21 @@
         "ts-node-dev": "~1.1.6",
         "tsconfig-paths": "~3.9.0",
         "typescript": "~4.3.2"
-    }
+    },
+    "homepage": "https://zhibirc.github.io/dbtex/",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:zhibirc/dbtex.git"
+    },
+    "bugs": {
+        "url": "https://github.com/zhibirc/dbtex/issues",
+        "email": "zhibirc.echo@gmail.com"
+    },
+    "keywords": [
+        "database",
+        "CRUD",
+        "flat-file",
+        "flat-file database",
+        "plain text"
+    ]
 }

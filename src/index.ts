@@ -2,10 +2,12 @@ import path from 'path';
 import fs from 'fs';
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
-import {save} from './utilities/save';
+import { save } from './utilities/save';
+import { log } from './utilities/log';
 import { serialize, deserialize } from './utilities/serialize';
 import { convertToBytes } from './utilities/unit-converters';
 import { AccessError } from './errors/access';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from './constants/exit-codes';
 import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
 
@@ -62,7 +64,11 @@ export class DbTex {
     /**
      * Check meta information file for validity.
      */
-    static audit ( config: Meta ) {}
+    static audit ( config: Meta ): number {
+        log(config);
+
+        return EXIT_CODE_SUCCESS;
+    }
 
     createTable ( name: string ) {}
 

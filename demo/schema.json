@@ -1,0 +1,5 @@
+{
+    "name": "varchar(128)",
+    "phone": "varchar(20) /^+?\\d{,20}$/",
+    "email": "varchar(256) [:email:]"
+}

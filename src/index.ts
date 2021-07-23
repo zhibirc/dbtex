@@ -2,6 +2,9 @@
 import path from 'path';
 import fs from 'fs';
 
+// components
+import { Table } from './components/table';
+
 // interfaces
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
@@ -12,6 +15,7 @@ import { log } from './utilities/log.js';
 import { serialize, deserialize } from './utilities/serialize.js';
 import { convertToBytes } from './utilities/unit-converters.js';
 import { isFileStructureAccessable } from './utilities/file-stat.js';
+import { validateSchema } from './utilities/schema-validator';
 
 // errors
 import { AccessError } from './errors/access.js';
@@ -36,14 +40,16 @@ export class DbTex {
         }) ) {
             const meta: string = fs.readFileSync(path.join(this._dbPath, META_INFO_FILE_NAME), 'utf8');
 
-            this._init(this._config = deserialize(meta) as Meta, true);
+            this._config = deserialize(meta) as Meta;
+            this._init(true);
         } else {
-            this._init(this._config = {...config, tables: []}, false);
+            this._config = {...config, tables: []};
+            this._init(false);
         }
     }
 
-    private _init ( config: Meta, exist: boolean ) {
-        const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = config;
+    private _init ( exist: boolean ) {
+        const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = this._config;
 
         if ( exist ) {
 
@@ -65,7 +71,7 @@ export class DbTex {
                     throw new Error(error.message);
                 }
             } else {
-                throw new AccessError(config.directory);
+                throw new AccessError(directory);
             }
         }
     }
@@ -74,25 +80,52 @@ export class DbTex {
      * Check meta information file for validity.
      */
     static audit ( config: Meta ): number {
+        log('audit proceed');
         log(config);
 
         return EXIT_CODE_SUCCESS;
     }
 
-    createTable ( name: string ) {
-        log('create table: ' + name);
+    createTable ( name: string, schema: object ) {
+        name = name.trim();
+
+        if ( this._config.tables.find(table => table.name === name ) ) {
+            throw new ReferenceError(`Nothing to create -- table name "${name}" is already exists.`);
+        }
+
+        if ( validateSchema(schema) ) {
+            try {
+                // TODO: create table file with specific structure and report success
+                // ...
+
+                // @ts-ignore
+                this._config.tables = this._config.tables.concat(new Table(name, schema));
+            } catch ( error ) {
+                throw new AccessError(path.join(this._dbPath, name));
+            }
+        } else {
+            throw new SyntaxError('Given schema is incorrect.');
+        }
     }
 
     dropTable ( name: string ) {
+        name = name.trim();
+
+        if ( !this._config.tables.find(table => table.name === name ) ) {
+            throw new ReferenceError(`Nothing to drop -- table name "${name}" not found.`);
+        }
+
         const tablePath = path.join(this._dbPath, name);
 
         try {
+            // all or nothing, emulate transaction approach
             fs.unlinkSync(tablePath);
+            this._config.tables = this._config.tables.filter(table => table.name !== name);
+            save(this._config, path.join(tablePath, META_INFO_FILE_NAME));
+
+            return EXIT_CODE_SUCCESS;
         } catch ( error ) {
             throw new AccessError(tablePath);
         }
-
-        this._config.tables = this._config.tables.filter(table => table.name !== name);
-        save(this._config, path.join(tablePath, META_INFO_FILE_NAME));
     }
 }

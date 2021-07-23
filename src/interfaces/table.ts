@@ -2,6 +2,6 @@ export interface Table {
     name: string,
     files: number,
     creationDate: number,
-    lastEntryDate?: number,
+    lastEntryDate?: number | null,
     schema: object
 }

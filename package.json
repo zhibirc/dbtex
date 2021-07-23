@@ -45,6 +45,7 @@
         "database",
         "CRUD",
         "flat-file",
+        "delimited file",
         "flat-file database",
         "plain text"
     ]

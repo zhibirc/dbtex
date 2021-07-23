@@ -1,7 +1,7 @@
 {
     "name": "dbtex",
     "productName": "DBTEX",
-    "description": "",
+    "description": "DBTEX is a lightweight, flat-file, zero-dependant database designed for using in non-ACID and relatively simple Node.js applications as an external dependency.",
     "version": "1.0.0",
     "author": {
         "name": "Yaroslav Surilov",

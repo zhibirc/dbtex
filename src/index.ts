@@ -1,15 +1,24 @@
+// built-ins
 import path from 'path';
 import fs from 'fs';
+
+// interfaces
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
-import { save } from './utilities/save';
-import { log } from './utilities/log';
-import { serialize, deserialize } from './utilities/serialize';
-import { convertToBytes } from './utilities/unit-converters';
-import { AccessError } from './errors/access';
-import { EXIT_CODE_SUCCESS } from './constants/exit-codes';
-import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta';
-import { isFileStructureAccessable } from './utilities/file-stat';
+
+// utilities
+import { save } from './utilities/save.js';
+import { log } from './utilities/log.js';
+import { serialize, deserialize } from './utilities/serialize.js';
+import { convertToBytes } from './utilities/unit-converters.js';
+import { isFileStructureAccessable } from './utilities/file-stat.js';
+
+// errors
+import { AccessError } from './errors/access.js';
+
+// constants
+import { EXIT_CODE_SUCCESS } from './constants/exit-codes.js';
+import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta.js';
 
 
 export class DbTex {

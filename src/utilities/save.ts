@@ -1,5 +1,8 @@
+// built-ins
 import fs from 'fs';
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes';
+
+// constants
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
 
 
 export function save ( what: any, where: string ): number {

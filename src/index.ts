@@ -7,7 +7,7 @@ import { log } from './utilities/log';
 import { serialize, deserialize } from './utilities/serialize';
 import { convertToBytes } from './utilities/unit-converters';
 import { AccessError } from './errors/access';
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from './constants/exit-codes';
+import { EXIT_CODE_SUCCESS } from './constants/exit-codes';
 import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta';
 import { isFileStructureAccessable } from './utilities/file-stat';
 
@@ -70,7 +70,9 @@ export class DbTex {
         return EXIT_CODE_SUCCESS;
     }
 
-    createTable ( name: string ) {}
+    createTable ( name: string ) {
+        log('create table: ' + name);
+    }
 
     dropTable ( name: string ) {
         const tablePath = path.join(this._dbPath, name);

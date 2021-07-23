@@ -16,10 +16,10 @@ export function log ( data: any, level: Symbol = log.INFO ): void {
     const { INFO, SUCCESS, WARNING, FAILURE } = log;
 
     const levelsMap = {
-        [INFO]: value => value,
-        [SUCCESS]: value => value,
-        [WARNING]: value => value,
-        [FAILURE]: value => value
+        [INFO]: (value: string): string => value,
+        [SUCCESS]: (value: string): string => value,
+        [WARNING]: (value: string): string => value,
+        [FAILURE]: (value: string): string => value
     };
 
     // @ts-ignore

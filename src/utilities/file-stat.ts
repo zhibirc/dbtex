@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs';
+import fs, { PathLike } from 'fs';
 
 /**
  * Determine if given file/folder structure exists and allows access for read/write.
@@ -56,7 +56,7 @@ export function isFileStructureAccessable ( struct: string | string[] | object )
 
     for ( let index = 0; index < paths.length; ++index ) {
         try {
-            fs.accessSync(paths[index], fs.constants.W_OK);
+            fs.accessSync(paths[index] as PathLike, fs.constants.W_OK);
         } catch {
             return false;
         }

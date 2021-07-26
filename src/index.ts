@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 // components
-import { Table } from './components/table';
+import { Table } from './components/table.js';
 
 // interfaces
 import { Config } from './interfaces/config';
@@ -15,7 +15,7 @@ import { log } from './utilities/log.js';
 import { serialize, deserialize } from './utilities/serialize.js';
 import { convertToBytes } from './utilities/unit-converters.js';
 import { isFileStructureAccessable } from './utilities/file-stat.js';
-import { validateSchema } from './utilities/schema-validator';
+import { validateSchema } from './utilities/schema-validator.js';
 
 // errors
 import { AccessError } from './errors/access.js';
@@ -43,13 +43,19 @@ export class DbTex {
             this._config = deserialize(meta) as Meta;
             this._init(true);
         } else {
-            this._config = {...config, tables: []};
+            this._config = {
+                ...config,
+                creationDate: Date.now(),
+                lastUpdate: Date.now(),
+                tables: []
+            };
             this._init(false);
         }
     }
 
     private _init ( exist: boolean ) {
         const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = this._config;
+
 
         if ( exist ) {
 

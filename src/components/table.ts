@@ -1,17 +1,19 @@
 // interfaces
-import { Table } from '../interfaces/table';
+import { Table as TableInterface } from '../interfaces/table';
 
 
-export class Table {
-    private readonly _meta: Table;
+export class Table implements TableInterface {
+    public readonly name;
+    public files;
+    public readonly creationDate;
+    public lastUpdate;
+    public readonly schema;
 
     constructor ( name: string, schema: object ) {
-        this._meta = {
-            name,
-            files: 1,
-            creationDate: Date.now(),
-            lastEntryDate: null,
-            schema
-        };
+        this.name = name;
+        this.files = 1;
+        this.creationDate = Date.now();
+        this.lastUpdate = Date.now();
+        this.schema = schema;
     }
 }

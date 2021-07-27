@@ -26,19 +26,19 @@ import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from './constants/meta.j
 
 
 export class DbTex {
-    private readonly _dbPath: string;
     private readonly _config: Meta;
+    public readonly location: string;
 
     constructor ( config: Config ) {
-        this._dbPath = path.join(config.directory, config.name);
+        this.location = path.join(config.directory, config.name);
 
         // try to use existent database from persistent storage instead of creating new instance
         if ( isFileStructureAccessable({
-            [this._dbPath]: {
+            [this.location]: {
                 [META_INFO_FILE_NAME]: null
             }
         }) ) {
-            const meta: string = fs.readFileSync(path.join(this._dbPath, META_INFO_FILE_NAME), 'utf8');
+            const meta: string = fs.readFileSync(path.join(this.location, META_INFO_FILE_NAME), 'utf8');
 
             this._config = deserialize(meta) as Meta;
             this._init(true);
@@ -62,9 +62,9 @@ export class DbTex {
         } else {
             if ( isFileStructureAccessable(directory) ) {
                 try {
-                    fs.mkdirSync(this._dbPath);
+                    fs.mkdirSync(this.location);
                     fs.writeFileSync(
-                        path.join(this._dbPath, META_INFO_FILE_NAME),
+                        path.join(this.location, META_INFO_FILE_NAME),
                         serialize({
                             directory,
                             name,
@@ -107,7 +107,7 @@ export class DbTex {
                 // @ts-ignore
                 this._config.tables = this._config.tables.concat(new Table(name, schema));
             } catch ( error ) {
-                throw new AccessError(path.join(this._dbPath, name));
+                throw new AccessError(path.join(this.location, name));
             }
         } else {
             throw new SyntaxError('Given schema is incorrect.');
@@ -121,7 +121,7 @@ export class DbTex {
             throw new ReferenceError(`Nothing to drop -- table name "${name}" not found.`);
         }
 
-        const tablePath = path.join(this._dbPath, name);
+        const tablePath = path.join(this.location, name);
 
         try {
             // all or nothing, emulate transaction approach

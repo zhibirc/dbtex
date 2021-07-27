@@ -26,7 +26,7 @@ export function curry ( func: Function, argsLength?: number ): Function {
         allParams.push(...params);
 
         return allParams.length < <number>argsLength ? curried : func(...allParams);
-    }
+    };
 }
 
 

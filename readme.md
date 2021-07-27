@@ -12,6 +12,32 @@ in an application, because it has no dependencies, and it's size is relatively s
 Oftentimes, application needs are scoped with CRUD operations, so **DBTEX** may be suitable for small and medium Node.js projects without high-load, ACID requirements, other advanced stuff and waste headache.
 
 
+## Getting Started
+
+Installation:
+
+```shell
+npm install dbtex
+
+# or
+
+yarn add dbtex
+```
+
+Initialize in application:
+
+```ts
+import { DbTex } from 'dbtex';
+
+
+// instantiate and create database (if not exists) in path: path-to-directory-with-database/name-of-database
+const dbTex = new DbTex({
+    directory: 'path-to-directory-with-database',
+    name: 'name-of-database'
+});
+```
+
+
 ## Contributing
 
 I'm grateful to the community for contributing bug fixes and improvements. Read [checklist](./checklist.md) and [issues](https://github.com/zhibirc/dbtex/issues) to learn how can you be helpful.

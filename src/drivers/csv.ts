@@ -9,7 +9,11 @@ export class DriverCsv implements Dsv {
         this.delimiter = ',';
     }
 
-    read () {}
+    read ( data: string ): object {
+        return data;
+    }
 
-    write () {}
+    write ( data: object ): string {
+        return data;
+    }
 }

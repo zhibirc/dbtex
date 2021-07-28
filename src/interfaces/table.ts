@@ -1,6 +1,6 @@
 export interface Table {
     name: string,
-    files: number,
+    filesNumber: number,
     creationDate: number,
     lastUpdate: number,
     schema: object

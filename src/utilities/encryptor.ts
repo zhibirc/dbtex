@@ -1,3 +1,8 @@
+/**
+ * Implement Data Encryption for database tables.
+ * It's default encryption engine, which can be replaced with custom one.
+ */
+
 // built-ins
 import crypto, { Cipher } from 'crypto';
 

@@ -1,9 +1,11 @@
+// interfaces
 import { Encryptor } from './encryptor';
+import { Dsv } from './dsv';
 
 
 export interface Config {
     /**
-     * Absolute path to parent directory that will contain database subdirectory with all related structures.
+     * Absolute path to parent directory that will contain database subdirectory with all related structures (i.e., the "base" directory).
      *
      * @example
      * {
@@ -50,6 +52,11 @@ export interface Config {
      * It's possible to pass a custom encryptor which must to implement the Encryptor interface/API.
      */
     encryptor?: Encryptor,
+    /**
+     * Read/write driver or adapter to transform table schema data to low-level "delimiter-separated values" for storing as table records and vice versa.
+     * It's possible to pass a custom driver which must to implement the Dsv interface/API.
+     */
+    driver?: Dsv,
     // hooks on CREATE
     beforeCreate?(record: object): object,
     afterCreate?(record: string): boolean,

@@ -9,7 +9,11 @@ export class DriverTsv implements Dsv {
         this.delimiter = '\t';
     }
 
-    read () {}
+    read ( data: string ): object {
+        return data;
+    }
 
-    write () {}
+    write ( data: object ): string {
+        return data;
+    }
 }

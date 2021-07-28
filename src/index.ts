@@ -8,6 +8,10 @@ import { Table } from './components/table.js';
 // interfaces
 import { Config } from './interfaces/config';
 import { Meta } from './interfaces/meta';
+import { Dsv } from './interfaces/dsv';
+
+// drivers
+import { DriverCsv } from './drivers/csv.js';
 
 // utilities
 import { save } from './utilities/save.js';
@@ -30,6 +34,8 @@ export class DbTex {
     public readonly location: string;
 
     constructor ( config: Config ) {
+        config = this._sanitizeConfig(config);
+
         this.location = path.join(config.directory, config.name);
 
         // try to use existent database from persistent storage instead of creating new instance
@@ -47,6 +53,7 @@ export class DbTex {
                 ...config,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
+                driver: config.driver || new DriverCsv(),
                 tables: []
             };
             this._init(false);
@@ -82,6 +89,16 @@ export class DbTex {
         }
     }
 
+    private _sanitizeConfig ( config: Config ): Config {
+        /* TODO
+         * - trim all string values
+         * - normalize paths
+         * - check all values are of expected types
+         * - throw error if some from above is impossible
+         */
+        return config;
+    }
+
     /**
      * Check meta information file for validity.
      */
@@ -92,8 +109,8 @@ export class DbTex {
         return EXIT_CODE_SUCCESS;
     }
 
-    createTable ( name: string, schema: object ) {
-        name = name.trim();
+    createTable ( name: string, schema: object ): Table | never {
+        name = this._config.prefix + name.trim();
 
         if ( this._config.tables.find(table => table.name === name ) ) {
             throw new ReferenceError(`Nothing to create -- table name "${name}" is already exists.`);
@@ -101,11 +118,19 @@ export class DbTex {
 
         if ( validateSchema(schema) ) {
             try {
-                // TODO: create table file with specific structure and report success
-                // ...
+                const tablePath: string = path.join(this.location, name);
+                const table: Table = new Table(name, schema);
 
+                fs.mkdirSync(tablePath);
+                fs.writeFileSync(
+                    path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
+                    // TODO: fix driver initialization and storing in meta-data (via constructor name)
+                    this._config.driver.write(schema)
+                );
                 // @ts-ignore
-                this._config.tables = this._config.tables.concat(new Table(name, schema));
+                this._config.tables = this._config.tables.concat(table);
+
+                return table;
             } catch ( error ) {
                 throw new AccessError(path.join(this.location, name));
             }

@@ -1,8 +1,8 @@
 .*
-demo
-node_modules
-src
-tests
+/demo
+/node_modules
+/src
+/tests
 *.md
 *.yml
 tsconfig.json

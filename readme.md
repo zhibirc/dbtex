@@ -1,9 +1,9 @@
 # dbtex
 
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](license.md)
-![Maintenance](https://img.shields.io/maintenance/yes/2021.svg?style=flat-square) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zhibirc/dbtex?color=orange&style=flat-square)
-![Lines of code](https://img.shields.io/tokei/lines/github/zhibirc/dbtex?color=yellow&style=flat-square)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)]()
+![Maintenance](https://img.shields.io/maintenance/yes/2021?color=brightgreen&style=flat-square) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zhibirc/dbtex?color=brightgreen&style=flat-square) [![dependencies Status](https://status.david-dm.org/gh/zhibirc/dbtex.svg?style=flat-square)](https://david-dm.org/zhibirc/dbtex)
+![Lines of code](https://img.shields.io/tokei/lines/github/zhibirc/dbtex?color=yellow&style=flat-square) ![GitHub repo size](https://img.shields.io/github/repo-size/zhibirc/dbtex?color=yellow&style=flat-square)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-magenta.svg)]()
 
 **DBTEX** is a lightweight, flat-file, zero-dependant database designed for using in non-ACID and relatively simple Node.js applications as an external dependency.
 

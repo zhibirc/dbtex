@@ -29,7 +29,7 @@ npm install dbtex
 yarn add dbtex
 ```
 
-Initialize in application:
+Initialize in application (see [API](#api) for detailed explanation):
 
 ```ts
 import { DbTex } from 'dbtex';
@@ -37,15 +37,25 @@ import { DbTex } from 'dbtex';
 
 // instantiate and create database (if not exists) in path: path-to-directory-with-database/name-of-database
 const dbTex: DbTex = new DbTex({
-    directory: 'path-to-directory-with-database',
-    name: 'name-of-database'
+    directory: 'database-parent-directory',
+    name: 'database-name',
+    fileSizeLimit: '1MB',
+    encrypt: true
 });
 ```
 
 
+## API
+
+`createTable`
+`dropTable`
+`audit`
+
+
 ## Contributing
 
-I'm grateful to the community for contributing bug fixes and improvements. Read [checklist](./checklist.md) and [issues](https://github.com/zhibirc/dbtex/issues) to learn how can you be helpful.
+I'm grateful to the community for contributing bug fixes and improvements. Read [checklist](./checklist.md) and [issues](https://github.com/zhibirc/dbtex/issues) to learn how specifically can you be helpful.
+If nevertheless you decide to help to improve **DBTEX**, please read the [Contribution Guidelines](./contributing.md) first. Thank you!
 
 
 ## License

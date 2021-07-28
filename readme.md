@@ -36,7 +36,7 @@ import { DbTex } from 'dbtex';
 
 
 // instantiate and create database (if not exists) in path: path-to-directory-with-database/name-of-database
-const dbTex = new DbTex({
+const dbTex: DbTex = new DbTex({
     directory: 'path-to-directory-with-database',
     name: 'name-of-database'
 });

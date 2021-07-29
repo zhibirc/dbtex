@@ -4,6 +4,9 @@
 ## Features
 
 - [ ] determine the scope what exactly the `audit` instance method should check and describe it in JSDoc
+- [ ] possibly use checksums calculation for deterministic audit
+- [ ] investigate and design **DBTEX** usage for logging tasks (assume only data appending)
+- [ ] research on idea about network driver for remote storage and driver compositions
 
 
 ## Documentation

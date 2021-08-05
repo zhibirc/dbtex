@@ -1,7 +1,8 @@
-import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { DbTex } from '../build/index.js';
 
 const dbTex = new DbTex({
-    directory: path.dirname(import.meta.url).replace('file://', ''),
+    directory: dirname(fileURLToPath(import.meta.url)),
     name: 'test-db'
 });

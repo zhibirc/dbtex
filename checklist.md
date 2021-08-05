@@ -7,6 +7,10 @@
 - [ ] possibly use checksums calculation for deterministic audit
 - [ ] investigate and design **DBTEX** usage for logging tasks (assume only data appending)
 - [ ] research on idea about network driver for remote storage and driver compositions
+- [ ] implement mechanism similar to `expireAfter`(TTL) for table records
+- [ ] implement indexing, probably via API method `createIndex`
+- [ ] add API for creating `unique` index ensures that the indexed fields don't store duplicate values
+- [ ] implement `autosave` mode for immediate writing to file and deferred saving
 
 
 ## Documentation

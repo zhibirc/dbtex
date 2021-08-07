@@ -133,7 +133,6 @@ export class DbTex implements DbTexInterface {
         return config;
     }
 
-    /** Check meta information file for validity. */
     static audit ( config: Meta ): number {
         log('audit proceed');
         log(config);
@@ -141,7 +140,6 @@ export class DbTex implements DbTexInterface {
         return EXIT_CODE_SUCCESS;
     }
 
-    /** Get statistics about database: general metrics, tables, paths, disk utilization, etc. */
     getStats () {
         // TODO: implement
         return {

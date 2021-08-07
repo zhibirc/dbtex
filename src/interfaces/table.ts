@@ -1,4 +1,5 @@
-type ExitCode;
+type ExitCode = number;
+
 
 export interface Table {
     name: string,

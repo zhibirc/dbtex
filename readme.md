@@ -36,9 +36,12 @@ Despite the [API](#api) exposes the high abstract convenient methods for data ma
            └── [prefix]table_N
    ```
 
+   Database metadata is stored in `meta.json` file in its root directory. This file contains all database instance related information and is closely synchronized with database structure and reflects all updates.
+
 2) Record/row in **DBTEX** terms is a character sequence terminated with line-break. This sequence consists of two types of symbols: _semantic_ sub-sequences and _delimiters_. What a delimiter should be
-   is defined by the driver being used. There are two common delimiters using for delimiter-separated values: commas in comma-separated values (CSV) and tabs in tab-separated values (TSV). There are two such built-in drivers.
-   It's possible to use a custom driver with an arbitrary delimiter and corresponding read/write logic. Driver type should be specified during **DBTEX** initialization, otherwise CSV format will be used.
+   is defined by the driver being used. There are two common delimiters using for delimiter-separated values: commas in comma-separated values (CSV) and tabs in tab-separated values (TSV).
+   There are two such currently supported built-in drivers. It's possible to use a custom driver with an arbitrary delimiter and corresponding read/write logic.
+   Driver type should be specified during **DBTEX** initialization, otherwise CSV format will be used.
 
 3) **DBTEX** is developed around so-called "navigational" principle, so read/write procedures are implemented using direct imperative traversing on table records.
 
@@ -74,11 +77,16 @@ const dbTex: DbTex = new DbTex({
 
 ## API
 
-`createTable`
+**DbTex**
 
-`dropTable`
-
-`audit`
+| Name          |  Type               | Description |
+|---------------|---------------------|-------------|
+| `location`    | instance _property_ | Absolute path to database directory (where meta-info and all tables data are stored). |
+| `audit`       | _static_ method     | Load data from meta-info file, verify all metrics being read, and compare with real database structure. |
+| `createTable` | instance _method_   | Create table in current database and update of database meta-info metrics. |
+| `dropTable`   | instance _method_   | Drop an existing table and update of database meta-info metrics. |
+| `getStats`    | instance _method_   | Get statistics about database: general metrics, tables, paths, disk utilization, etc. |
+| `setHook`     | instance _method_   | Set (add new or update of existing) additional procedure as a middleware to the CRUD flow. |
 
 
 ## Contributing

@@ -1,3 +1,7 @@
+// built-ins
+import path from 'path';
+import fs from 'fs';
+
 // interfaces
 import { Encryptor } from './encryptor';
 import { Dsv } from './dsv';
@@ -57,16 +61,29 @@ export interface Config {
      * It's possible to pass a custom driver which must to implement the Dsv interface/API.
      */
     driver?: Dsv,
-    // hooks on CREATE
-    beforeCreate?(record: object): object,
-    afterCreate?(record: string): boolean,
-    // hooks on READ
-    beforeRead?(): boolean,
-    afterRead?(record: string): boolean,
+    // hooks on INSERT
+    beforeInsert?(record: {[key: string]: string}): {[key: string]: string},
+    afterInsert?(record: string): boolean,
+    // hooks on SELECT
+    beforeSelect?(): boolean,
+    afterSelect?(record: string): boolean,
     // hooks on UPDATE
-    beforeUpdate?(record: object): object,
+    beforeUpdate?(record: {[key: string]: string}): {[key: string]: string},
     afterUpdate?(record: string): boolean,
     // hooks on DELETE
-    beforeDelete?(record: object): object,
-    afterDelete?(record: string): boolean,
+    beforeDelete?(record: {[key: string]: string}): {[key: string]: string},
+    afterDelete?(record: string): boolean
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function isConfig(config: any): config is Config {
+    try {
+        return Object.prototype.toString.call(config) === '[object Object]'
+            && typeof config.directory === 'string'
+            && fs.statSync(path.normalize(config.directory.trim())).isDirectory()
+            && typeof config.name === 'string'
+            && config.name.trim();
+    } catch {
+        return false;
+    }
 }

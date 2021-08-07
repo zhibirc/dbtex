@@ -7,7 +7,7 @@ import { Table } from './table.js';
 
 // interfaces
 import { DbTex as DbTexInterface } from '../interfaces/dbtex';
-import { Config } from '../interfaces/config';
+import { Config, isConfig } from '../interfaces/config';
 import { Meta } from '../interfaces/meta';
 
 // drivers
@@ -20,6 +20,8 @@ import { serialize, deserialize } from '../utilities/serialize.js';
 import { convertToBytes } from '../utilities/unit-converters.js';
 import { isFileStructureAccessable } from '../utilities/file-stat.js';
 import { validateSchema } from '../utilities/schema-validator.js';
+import { nop } from '../utilities/nop.js';
+import { Encryptor } from '../utilities/encryptor.js';
 
 // errors
 import { AccessError } from '../errors/access.js';
@@ -53,7 +55,6 @@ export class DbTex implements DbTexInterface {
                 ...config,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
-                driver: config.driver || new DriverCsv(),
                 tables: []
             };
             this._init(false);
@@ -90,12 +91,45 @@ export class DbTex implements DbTexInterface {
     }
 
     private _sanitizeConfig ( config: Config ): Config {
-        /* TODO
-         * - trim all string values
-         * - normalize paths
-         * - check all values are of expected types
-         * - throw error if some from above is impossible
-         */
+        if ( isConfig(config) ) {
+            const {
+                directory,
+                name,
+                prefix,
+                fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT,
+                encrypt,
+                encryptor = new Encryptor(),
+                driver = new DriverCsv(),
+                beforeInsert = nop,
+                afterInsert  = nop,
+                beforeSelect = nop,
+                afterSelect  = nop,
+                beforeUpdate = nop,
+                afterUpdate  = nop,
+                beforeDelete = nop,
+                afterDelete  = nop
+            } = config;
+
+            return {
+                directory: path.normalize(directory.trim()),
+                name: name.trim(),
+                prefix: typeof prefix === 'string' ? prefix.trim() : '',
+                fileSizeLimit,
+                encrypt: encrypt === true,
+                // type guards for encryptor and driver are not so strict, keep it in mind
+                encryptor,
+                driver,
+                beforeInsert,
+                afterInsert,
+                beforeSelect,
+                afterSelect,
+                beforeUpdate,
+                afterUpdate,
+                beforeDelete,
+                afterDelete
+            };
+        }
+
         return config;
     }
 
@@ -113,6 +147,10 @@ export class DbTex implements DbTexInterface {
         return {
             name: this._config.name
         };
+    }
+
+    setHook ( name, callback ): number {
+        return EXIT_CODE_SUCCESS;
     }
 
     createTable ( name: string, schema: object ): Table | never {

@@ -1,3 +1,5 @@
+type ExitCode;
+
 export interface Table {
     name: string,
     filesNumber: number,
@@ -6,7 +8,9 @@ export interface Table {
     schema?: {[key: string]: string | number | boolean},
     // TODO: check signatures
     insert(): number | number[] | null,
-    select(): string | string[],
+    // TODO: {key: value}, {key <: value}, { key >: value}
+    select(condition: {[key: string]: string | number}): string | string[],
     update(): number | number[] | null,
     delete(): number | null,
+    deleteAll(): ExitCode
 }

@@ -6,6 +6,7 @@ import fs from 'fs';
 import { Table } from './table.js';
 
 // interfaces
+import { DbTex as DbTexInterface } from '../interfaces/dbtex';
 import { Config } from '../interfaces/config';
 import { Meta } from '../interfaces/meta';
 
@@ -28,7 +29,7 @@ import { EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
 import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from '../constants/meta.js';
 
 
-export class DbTex {
+export class DbTex implements DbTexInterface {
     private readonly _config: Meta;
     public readonly location: string;
 
@@ -98,14 +99,20 @@ export class DbTex {
         return config;
     }
 
-    /**
-     * Check meta information file for validity.
-     */
+    /** Check meta information file for validity. */
     static audit ( config: Meta ): number {
         log('audit proceed');
         log(config);
 
         return EXIT_CODE_SUCCESS;
+    }
+
+    /** Get statistics about database: general metrics, tables, paths, disk utilization, etc. */
+    getStats () {
+        // TODO: implement
+        return {
+            name: this._config.name
+        };
     }
 
     createTable ( name: string, schema: object ): Table | never {

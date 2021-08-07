@@ -11,6 +11,7 @@
 - [ ] implement indexing, probably via API method `createIndex`
 - [ ] add API for creating `unique` index ensures that the indexed fields don't store duplicate values
 - [ ] implement `autosave` mode for immediate writing to file and deferred saving
+- [ ] think about backing up to local path and/or to remote host
 
 
 ## Documentation

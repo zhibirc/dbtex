@@ -15,7 +15,7 @@ export interface DbTex {
     /** Drop an existing table and update of database meta-info metrics. */
     dropTable(name: string): number | never,
     /** Get statistics about database: general metrics, tables, paths, disk utilization, etc. */
-    getStats(): {[key: string]: string | number | boolean},
+    getStats(): {[key: string]: string | number | boolean | Table[]},
     /** Set (add new or update of existing) additional procedure as a middleware to the CRUD flow. */
     setHook(name: string, callback: (record?: {[key: string]: string}) => {[key: string]: string}): number
 }

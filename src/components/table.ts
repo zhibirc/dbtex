@@ -1,6 +1,10 @@
 // interfaces
 import { Table as TableInterface } from '../interfaces/table';
 
+// constants
+import DataType from '../constants/data-types';
+import { ExitCode, EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+
 
 export class Table implements TableInterface {
     public readonly name;
@@ -9,11 +13,24 @@ export class Table implements TableInterface {
     public lastUpdate;
     public readonly schema;
 
-    constructor ( name: string, schema: object ) {
+    constructor ( name: string, schema: {[key: string]: DataType}) {
         this.name = name;
         this.filesNumber = 1;
         this.creationDate = Date.now();
         this.lastUpdate = Date.now();
         this.schema = schema;
+    }
+
+    insert(): number | number[] | null {}
+
+    // TODO: {key: value}, {key <: value}, { key >: value}
+    select(condition: {[key: string]: string | number}): string | string[] {}
+
+    update(): number | number[] | null {}
+
+    delete(): number | null {}
+
+    deleteAll(): ExitCode {
+        return EXIT_CODE_SUCCESS;
     }
 }

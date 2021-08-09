@@ -12,7 +12,7 @@ log.WARNING = Symbol('log.WARNING');
 log.FAILURE = Symbol('log.FAILURE');
 
 
-export function log ( data: any, level: Symbol = log.INFO ): void {
+export function log ( data: any, level: symbol = log.INFO ): void {
     const { INFO, SUCCESS, WARNING, FAILURE } = log;
 
     const levelsMap = {

@@ -6,7 +6,7 @@ export interface Table {
     filesNumber: number,
     creationDate: number,
     lastUpdate: number,
-    schema?: {[key: string]: string | number | boolean},
+    schema: {[key: string]: string | number | boolean},
     // TODO: check signatures
     insert(): number | number[] | null,
     // TODO: {key: value}, {key <: value}, { key >: value}

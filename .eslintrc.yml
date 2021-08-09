@@ -23,5 +23,7 @@ rules:
     semi:
         - error
         - always
-    no-non-null-assertion:
+    '@typescript-eslint/no-non-null-assertion':
+        - off
+    '@typescript-eslint/ban-ts-comment':
         - off

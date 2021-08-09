@@ -3,17 +3,15 @@ import { Dsv } from '../interfaces/dsv';
 
 
 export class DriverTsv implements Dsv {
-    public readonly delimiter: string;
-
-    constructor () {
-        this.delimiter = '\t';
+    get delimiter (): string {
+        return '\t';
     }
 
-    read ( data: string ): object {
+    read ( data: string | string[] ): string[] | string[][] {
         return data;
     }
 
-    write ( data: object ): string {
+    write ( data: string[] | string[][] ): string | string[] {
         return data;
     }
 }

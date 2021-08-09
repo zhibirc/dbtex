@@ -103,7 +103,6 @@ export class DbTex implements DbTexInterface {
                             fileSizeLimit: convertToBytes(fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT),
                             encrypt,
                             encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
                             driver: driver instanceof DriverCsv || driver instanceof DriverTsv ? driver.prototype.constructor.name : FEATURE_TYPE_CUSTOM,
                             beforeInsert: beforeInsert!.toString(),
@@ -177,9 +176,15 @@ export class DbTex implements DbTexInterface {
     }
 
     getStats () {
-        // TODO: implement
         return {
-            name: this._config.name
+            name: this._config.name,
+            location: this.location,
+            tables: this._config.tables.map(table => ({
+                name: table.name,
+                creationDate: table.creationDate,
+                lastUpdate: table.lastUpdate,
+                filesNumber: table.filesNumber
+            }))
         };
     }
 

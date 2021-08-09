@@ -6,12 +6,13 @@ import fs from 'fs';
 import { Table } from './table.js';
 
 // interfaces
-import { DbTex as DbTexInterface } from '../interfaces/dbtex';
-import { Config, isConfig } from '../interfaces/config';
-import { Meta } from '../interfaces/meta';
+import { DbTex as DbTexInterface } from '../interfaces/dbtex.js';
+import { Config, isConfig } from '../interfaces/config.js';
+import { Meta } from '../interfaces/meta.js';
 
 // drivers
 import { DriverCsv } from '../drivers/csv.js';
+import { DriverTsv } from '../drivers/tsv.js';
 
 // utilities
 import { save } from '../utilities/save.js';
@@ -27,8 +28,14 @@ import { Encryptor } from '../utilities/encryptor.js';
 import { AccessError } from '../errors/access.js';
 
 // constants
-import { EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
-import { META_INFO_FILE_NAME, DEFAULT_FILE_SIZE_LIMIT } from '../constants/meta.js';
+import { ExitCode, EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+import DataType from '../constants/data-types.js';
+import {
+    META_INFO_FILE_NAME,
+    DEFAULT_FILE_SIZE_LIMIT,
+    FEATURE_TYPE_BOX,
+    FEATURE_TYPE_CUSTOM
+} from '../constants/meta.js';
 
 
 export class DbTex implements DbTexInterface {
@@ -61,12 +68,28 @@ export class DbTex implements DbTexInterface {
         }
     }
 
-    private _init ( exist: boolean ) {
-        const { directory, name, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT, encrypt, tables } = this._config;
-
+    private _init ( exist: boolean ): void | never {
+        const {
+            directory,
+            name,
+            prefix,
+            fileSizeLimit,
+            encrypt,
+            encryptor,
+            driver,
+            beforeInsert,
+            afterInsert,
+            beforeSelect,
+            afterSelect,
+            beforeUpdate,
+            afterUpdate,
+            beforeDelete,
+            afterDelete,
+            tables
+        } = this._config;
 
         if ( exist ) {
-
+            // TODO: this case is when configuration exists and we need to parse some fields only
         } else {
             if ( isFileStructureAccessable(directory) ) {
                 try {
@@ -76,8 +99,21 @@ export class DbTex implements DbTexInterface {
                         serialize({
                             directory,
                             name,
-                            fileSizeLimit: convertToBytes(fileSizeLimit),
+                            prefix,
+                            fileSizeLimit: convertToBytes(fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT),
                             encrypt,
+                            encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            driver: driver instanceof DriverCsv || driver instanceof DriverTsv ? driver.prototype.constructor.name : FEATURE_TYPE_CUSTOM,
+                            beforeInsert: beforeInsert!.toString(),
+                            afterInsert:  afterInsert!.toString(),
+                            beforeSelect: beforeSelect!.toString(),
+                            afterSelect:  afterSelect!.toString(),
+                            beforeUpdate: beforeUpdate!.toString(),
+                            afterUpdate:  afterUpdate!.toString(),
+                            beforeDelete: beforeDelete!.toString(),
+                            afterDelete:  afterDelete!.toString(),
                             tables
                         })
                     );
@@ -133,7 +169,7 @@ export class DbTex implements DbTexInterface {
         return config;
     }
 
-    static audit ( config: Meta ): number {
+    static audit ( config: Meta ): ExitCode {
         log('audit proceed');
         log(config);
 
@@ -147,41 +183,52 @@ export class DbTex implements DbTexInterface {
         };
     }
 
-    setHook ( name, callback ): number {
-        return EXIT_CODE_SUCCESS;
+    setHook ( name: string, callback ): ExitCode {
+        if ( typeof name === 'string' && name.trim() && typeof callback === 'function' ) {
+            return EXIT_CODE_SUCCESS;
+        }
+
+        return EXIT_CODE_FAILURE;
     }
 
-    createTable ( name: string, schema: object ): Table | never {
+    createTable ( name: string, schema: {[key: string]: DataType} ): Table | never {
         name = this._config.prefix + name.trim();
 
         if ( this._config.tables.find(table => table.name === name ) ) {
             throw new ReferenceError(`Nothing to create -- table name "${name}" is already exists.`);
         }
 
-        if ( validateSchema(schema) ) {
-            try {
-                const tablePath: string = path.join(this.location, name);
-                const table: Table = new Table(name, schema);
+        const columnTitleDataList: string[] = [];
 
-                fs.mkdirSync(tablePath);
-                fs.writeFileSync(
-                    path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
-                    // TODO: fix driver initialization and storing in meta-data (via constructor name)
-                    this._config.driver.write(schema)
-                );
-                // @ts-ignore
-                this._config.tables = this._config.tables.concat(table);
+        if ( schema ) {
+            if ( validateSchema(schema) ) {
+                try {
+                    const tablePath: string = path.join(this.location, name);
+                    const table: Table = new Table(name, schema);
 
-                return table;
-            } catch ( error ) {
-                throw new AccessError(path.join(this.location, name));
+                    fs.mkdirSync(tablePath);
+                    fs.writeFileSync(
+                        path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
+                        // TODO: fix driver initialization and storing in meta-data (via constructor name)
+                        this._config.driver.write(schema)
+                    );
+                    // @ts-ignore
+                    this._config.tables = this._config.tables.concat(table);
+
+                    return table;
+                } catch ( error ) {
+                    throw new AccessError(path.join(this.location, name));
+                }
+            } else {
+                throw new SyntaxError('Given schema is incorrect.');
             }
-        } else {
-            throw new SyntaxError('Given schema is incorrect.');
         }
+
+
+
     }
 
-    dropTable ( name: string ) {
+    dropTable ( name: string ): ExitCode | never {
         name = name.trim();
 
         if ( !this._config.tables.find(table => table.name === name ) ) {

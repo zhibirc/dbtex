@@ -20,7 +20,7 @@
         "lint:fix": "npm run lint:ts -- --fix",
         "test": "mocha --check-leaks --require tsconfig-paths/register --require ts-node/register tests/spec.ts",
         "build": "tsc -p .",
-        "start": "npm run build && node build/index.js"
+        "start": "nodemon"
     },
     "devDependencies": {
         "@tsconfig/node14": "~1.0.1",
@@ -32,6 +32,7 @@
         "chai": "~4.3.4",
         "eslint": "~7.27.0",
         "mocha": "~8.4.0",
+        "nodemon": "^2.0.12",
         "ts-node-dev": "~1.1.6",
         "tsconfig-paths": "~3.9.0",
         "typescript": "~4.3.2"

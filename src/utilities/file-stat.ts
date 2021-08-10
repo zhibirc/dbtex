@@ -29,7 +29,7 @@ import fs, { PathLike } from 'fs';
  *     ]
  * }
  */
-export function isFileStructureAccessable ( struct: string | string[] | {[key: string]: string } ): boolean {
+export function isFileStructureAccessable ( struct: string | string[] | {[key: string]: any } ): boolean {
     const paths: string[] = typeof struct === 'string'
         ? [struct]
         : Array.isArray(struct)

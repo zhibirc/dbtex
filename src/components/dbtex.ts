@@ -43,7 +43,7 @@ export class DbTex implements DbTexInterface {
     public readonly location: string;
 
     constructor ( config: Config ) {
-        config = this._sanitizeConfig(config);
+        config = this.#sanitizeConfig(config);
 
         this.location = path.join(config.directory, config.name);
 
@@ -56,7 +56,7 @@ export class DbTex implements DbTexInterface {
             const meta: string = fs.readFileSync(path.join(this.location, META_INFO_FILE_NAME), 'utf8');
 
             this._config = deserialize(meta) as Meta;
-            this._init(true);
+            this.#init(true);
         } else {
             this._config = {
                 ...config,
@@ -64,11 +64,11 @@ export class DbTex implements DbTexInterface {
                 lastUpdate: Date.now(),
                 tables: []
             };
-            this._init(false);
+            this.#init(false);
         }
     }
 
-    private _init ( exist: boolean ): void | never {
+    #init ( exist: boolean ): void | never {
         const {
             directory,
             name,
@@ -125,7 +125,7 @@ export class DbTex implements DbTexInterface {
         }
     }
 
-    private _sanitizeConfig ( config: Config ): Config {
+    #sanitizeConfig ( config: Config ): Config {
         if ( isConfig(config) ) {
             const {
                 directory,

@@ -1,9 +1,9 @@
 // interfaces
 import { Table as TableInterface } from '../interfaces/table';
+import { Schema } from '../interfaces/schema';
 
 // constants
-import DataType from '../constants/data-types';
-import { ExitCode, EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+import { ExitCode, EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
 
 
 export class Table implements TableInterface {
@@ -11,9 +11,9 @@ export class Table implements TableInterface {
     public filesNumber;
     public readonly creationDate;
     public lastUpdate;
-    public readonly schema;
+    public readonly schema: Schema;
 
-    constructor ( name: string, schema: {[key: string]: DataType}) {
+    constructor ( name: string, schema: Schema ) {
         this.name = name;
         this.filesNumber = 1;
         this.creationDate = Date.now();

@@ -16,14 +16,14 @@ export class DriverCsv implements Dsv {
         return data.split(this.delimiter);
     }
 
-    write ( data: string[] | string[][] ): string | string[] {
+    write ( data: string[] | string[][] ): string {
         if ( !Array.isArray(data) || data.length === 0 ) {
             // TODO: think about uniform errors
             throw new TypeError();
         }
 
         if ( Array.isArray(data[0]) ) {
-            return data.map(chunk => (chunk as string[]).join(this.delimiter));
+            return data.map(chunk => (chunk as string[]).join(this.delimiter)).join('\n');
         }
 
         return data.join(this.delimiter);

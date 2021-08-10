@@ -9,6 +9,7 @@ import { Table } from './table.js';
 import { DbTex as DbTexInterface } from '../interfaces/dbtex.js';
 import { Config, isConfig } from '../interfaces/config.js';
 import { Meta } from '../interfaces/meta.js';
+import { Schema } from '../interfaces/schema';
 
 // drivers
 import { DriverCsv } from '../drivers/csv.js';
@@ -21,6 +22,7 @@ import { serialize, deserialize } from '../utilities/serialize.js';
 import { convertToBytes } from '../utilities/unit-converters.js';
 import { isFileStructureAccessable } from '../utilities/file-stat.js';
 import { validateSchema } from '../utilities/schema-validator.js';
+import { parseSchema } from '../utilities/schema-parser.js';
 import { nop } from '../utilities/nop.js';
 import { Encryptor } from '../utilities/encryptor.js';
 
@@ -39,7 +41,7 @@ import {
 
 
 export class DbTex implements DbTexInterface {
-    private readonly _config: Meta;
+    readonly #config: Meta;
     public readonly location: string;
 
     constructor ( config: Config ) {
@@ -55,10 +57,10 @@ export class DbTex implements DbTexInterface {
         }) ) {
             const meta: string = fs.readFileSync(path.join(this.location, META_INFO_FILE_NAME), 'utf8');
 
-            this._config = deserialize(meta) as Meta;
+            this.#config = deserialize(meta) as Meta;
             this.#init(true);
         } else {
-            this._config = {
+            this.#config = {
                 ...config,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
@@ -86,7 +88,7 @@ export class DbTex implements DbTexInterface {
             beforeDelete,
             afterDelete,
             tables
-        } = this._config;
+        } = this.#config;
 
         if ( exist ) {
             // TODO: this case is when configuration exists and we need to parse some fields only
@@ -175,11 +177,11 @@ export class DbTex implements DbTexInterface {
         return EXIT_CODE_SUCCESS;
     }
 
-    getStats () {
+    getStats (): {[key: string]: string | number | any[]} {
         return {
-            name: this._config.name,
+            name: this.#config.name,
             location: this.location,
-            tables: this._config.tables.map(table => ({
+            tables: this.#config.tables.map(table => ({
                 name: table.name,
                 creationDate: table.creationDate,
                 lastUpdate: table.lastUpdate,
@@ -196,10 +198,10 @@ export class DbTex implements DbTexInterface {
         return EXIT_CODE_FAILURE;
     }
 
-    createTable ( name: string, schema: {[key: string]: DataType} ): Table | never {
-        name = this._config.prefix + name.trim();
+    createTable ( name: string, schema: Schema ): Table | never {
+        name = this.#config.prefix + name.trim();
 
-        if ( this._config.tables.find(table => table.name === name ) ) {
+        if ( this.#config.tables.find(table => table.name === name ) ) {
             throw new ReferenceError(`Nothing to create -- table name "${name}" is already exists.`);
         }
 
@@ -214,11 +216,10 @@ export class DbTex implements DbTexInterface {
                     fs.mkdirSync(tablePath);
                     fs.writeFileSync(
                         path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
-                        // TODO: fix driver initialization and storing in meta-data (via constructor name)
-                        this._config.driver.write(schema)
+                        this.#config.driver!.write(parseSchema(schema))
                     );
-                    // @ts-ignore
-                    this._config.tables = this._config.tables.concat(table);
+
+                    this.#config.tables = this.#config.tables.concat(table);
 
                     return table;
                 } catch ( error ) {
@@ -236,7 +237,7 @@ export class DbTex implements DbTexInterface {
     dropTable ( name: string ): ExitCode | never {
         name = name.trim();
 
-        if ( !this._config.tables.find(table => table.name === name ) ) {
+        if ( !this.#config.tables.find(table => table.name === name ) ) {
             throw new ReferenceError(`Nothing to drop -- table name "${name}" not found.`);
         }
 
@@ -245,8 +246,8 @@ export class DbTex implements DbTexInterface {
         try {
             // all or nothing, emulate transaction approach
             fs.unlinkSync(tablePath);
-            this._config.tables = this._config.tables.filter(table => table.name !== name);
-            save(this._config, path.join(tablePath, META_INFO_FILE_NAME));
+            this.#config.tables = this.#config.tables.filter(table => table.name !== name);
+            save(this.#config, path.join(tablePath, META_INFO_FILE_NAME));
 
             return EXIT_CODE_SUCCESS;
         } catch ( error ) {

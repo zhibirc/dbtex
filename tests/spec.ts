@@ -5,6 +5,6 @@ import { expect } from 'chai';
 import { DbTex } from '../src';
 
 
-describe('Components availability', () => {});
-describe('New DBTEX instance creation', () => {});
-describe('Manipulation with tables', () => {});
+describe('Components availability', () => {/**/});
+describe('New DBTEX instance creation', () => {/**/});
+describe('Manipulation with tables', () => {/**/});

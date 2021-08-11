@@ -20,7 +20,6 @@ import { DriverTsv } from '../drivers/tsv.js';
 
 // utilities
 import { save } from '../utilities/save.js';
-import { log } from '../utilities/log.js';
 import { serialize, deserialize } from '../utilities/serialize.js';
 import { convertToBytes } from '../utilities/unit-converters.js';
 import { isFileStructureAccessable } from '../utilities/file-stat.js';
@@ -192,10 +191,8 @@ export class DbTex implements IDbTex {
         UUID: Symbol('UUID')
     };
 
-    static audit ( config: Meta ): ExitCode {
-        log('audit proceed');
-        log(config);
-
+    audit (): ExitCode {
+        // stub
         return EXIT_CODE_SUCCESS;
     }
 
@@ -248,7 +245,7 @@ export class DbTex implements IDbTex {
                 this.#config.driver!.write(columnTitleData)
             );
 
-            this.#config.tables = this.#config.tables.concat(table);
+            this.#config.tables.push(table as Table);
 
             return table;
         } catch ( error ) {
@@ -275,5 +272,10 @@ export class DbTex implements IDbTex {
         } catch ( error ) {
             throw new AccessError(tablePath);
         }
+    }
+
+    shutdown(): ExitCode {
+        // stub
+        return EXIT_CODE_SUCCESS;
     }
 }

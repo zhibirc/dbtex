@@ -7,11 +7,16 @@ export class DriverTsv implements Dsv {
         return '\t';
     }
 
+
+    // @ts-ignore
     read ( data: string | string[] ): string[] | string[][] {
-        return data;
+        // TODO: implement
+        return [];
     }
 
+    // @ts-ignore
     write ( data: string | string[] | string[][] ): string {
-        return data;
+        // TODO: implement
+        return '';
     }
 }

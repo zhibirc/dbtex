@@ -10,7 +10,10 @@ import { EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
 
 
 export class Table implements ITable {
-    #data = [];
+    // @ts-ignore
+    #data: string[] = [];
+    // @ts-ignore
+    #buffer: string[] = [];
 
     public readonly name;
     public filesNumber;
@@ -26,14 +29,23 @@ export class Table implements ITable {
         this.schema     = schema;
     }
 
-    insert(): number | number[] | null {}
+    insert(): number | number[] | null {
+        return null;
+    }
 
     // TODO: {key: value}, {key <: value}, { key >: value}
-    select(condition: {[key: string]: string | number}): string | string[] {}
+    // @ts-ignore
+    select(condition: {[key: string]: string | number}): string | string[] {
+        return [];
+    }
 
-    update(): number | number[] | null {}
+    update(): number | number[] | null {
+        return null;
+    }
 
-    delete(): number | null {}
+    delete(): number | null {
+        return null;
+    }
 
     deleteAll(): ExitCode {
         return EXIT_CODE_SUCCESS;

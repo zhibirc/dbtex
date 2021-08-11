@@ -3,10 +3,10 @@
  */
 
 
-export function serialize ( data: any[] | object ): string {
+export function serialize ( data: any[] | {[key: string]: unknown} ): string {
     return JSON.stringify(data);
 }
 
-export function deserialize ( data: string ): any[] | object {
+export function deserialize ( data: string ): any[] | {[key: string]: unknown} {
     return JSON.parse(data);
 }

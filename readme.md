@@ -87,6 +87,7 @@ const dbTex: DbTex = new DbTex({
 | `dropTable`   | instance _method_   | Drop an existing table and update of database meta-info metrics. |
 | `getStats`    | instance _method_   | Get statistics about database: general metrics, tables, paths, disk utilization, etc. |
 | `setHook`     | instance _method_   | Set (add new or update of existing) additional procedure as a middleware to the CRUD flow. |
+| `shutdown`    | instance _method_   | Terminate database process gracefully. |
 
 
 ## Contributing

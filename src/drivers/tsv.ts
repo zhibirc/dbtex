@@ -11,7 +11,7 @@ export class DriverTsv implements Dsv {
         return data;
     }
 
-    write ( data: string[] | string[][] ): string {
+    write ( data: string | string[] | string[][] ): string {
         return data;
     }
 }

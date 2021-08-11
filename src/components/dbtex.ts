@@ -28,6 +28,7 @@ import { validateSchema } from '../utilities/schema-validator.js';
 import { parseSchema } from '../utilities/schema-parser.js';
 import { nop } from '../utilities/nop.js';
 import { Encryptor } from '../utilities/encryptor.js';
+import { isObject } from '../utilities/isObject';
 
 // errors
 import { AccessError } from '../errors/access.js';
@@ -211,7 +212,8 @@ export class DbTex implements IDbTex {
         };
     }
 
-    setHook ( name: string, callback ): ExitCode {
+    // TODO: fix callback type
+    setHook ( name: string, callback: () => unknown ): ExitCode {
         if ( typeof name === 'string' && name.trim() && typeof callback === 'function' ) {
             return EXIT_CODE_SUCCESS;
         }
@@ -219,40 +221,39 @@ export class DbTex implements IDbTex {
         return EXIT_CODE_FAILURE;
     }
 
-    createTable ( name: string, schema: Schema ): Table | never {
+    createTable ( name: string, schema?: Schema ): Table | never {
         name = this.#config.prefix + name.trim();
 
         if ( this.#config.tables.find(table => table.name === name ) ) {
             throw new ReferenceError(`Nothing to create -- table name "${name}" is already exists.`);
         }
 
-        const columnTitleDataList: string[] = [];
+        let columnTitleData: string | string[] = '';
 
-        if ( schema ) {
-            if ( validateSchema(schema) ) {
-                try {
-                    const tablePath: string = path.join(this.location, name);
-                    const table: Table = new Table(name, schema);
-
-                    fs.mkdirSync(tablePath);
-                    fs.writeFileSync(
-                        path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
-                        this.#config.driver!.write(parseSchema(schema))
-                    );
-
-                    this.#config.tables = this.#config.tables.concat(table);
-
-                    return table;
-                } catch ( error ) {
-                    throw new AccessError(path.join(this.location, name));
-                }
+        if ( schema != null ) {
+            if ( isObject(schema) && validateSchema(schema) ) {
+                columnTitleData = parseSchema(schema);
             } else {
                 throw new SyntaxError('Given schema is incorrect.');
             }
         }
 
+        try {
+            const tablePath: string = path.join(this.location, name);
+            const table: Table = new Table(name, schema || null);
 
+            fs.mkdirSync(tablePath);
+            fs.writeFileSync(
+                path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
+                this.#config.driver!.write(columnTitleData)
+            );
 
+            this.#config.tables = this.#config.tables.concat(table);
+
+            return table;
+        } catch ( error ) {
+            throw new AccessError(path.join(this.location, name));
+        }
     }
 
     dropTable ( name: string ): ExitCode | never {

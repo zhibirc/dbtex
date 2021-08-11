@@ -10,6 +10,9 @@ import { Dsv } from '../dsv';
 import { Record } from './record';
 import { ExitCode } from './exit-code';
 
+// utilities
+import { isObject } from '../../utilities/isObject';
+
 
 export type Config = {
     /**
@@ -82,7 +85,7 @@ export type Config = {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function isConfig(config: any): config is Config {
     try {
-        return Object.prototype.toString.call(config) === '[object Object]'
+        return isObject(config)
             && typeof config.directory === 'string'
             && fs.statSync(path.normalize(config.directory.trim())).isDirectory()
             && typeof config.name === 'string'

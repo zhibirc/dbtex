@@ -1,4 +1,6 @@
-type ExitCode = number;
+// types
+import { ExitCode } from './types/exit-code';
+import { Schema } from './types/schema';
 
 
 export interface Table {
@@ -6,7 +8,7 @@ export interface Table {
     filesNumber: number,
     creationDate: number,
     lastUpdate: number,
-    schema: {[key: string]: string | number | boolean},
+    schema: Schema | null,
     // TODO: check signatures
     insert(): number | number[] | null,
     // TODO: {key: value}, {key <: value}, { key >: value}

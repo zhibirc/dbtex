@@ -16,7 +16,7 @@ export class DriverCsv implements Dsv {
         return data.split(this.delimiter);
     }
 
-    write ( data: string[] | string[][] ): string {
+    write ( data: string | string[] | string[][] ): string {
         if ( !Array.isArray(data) || data.length === 0 ) {
             // TODO: think about uniform errors
             throw new TypeError();

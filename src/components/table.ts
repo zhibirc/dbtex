@@ -1,24 +1,29 @@
 // interfaces
-import { Table as TableInterface } from '../interfaces/table';
-import { Schema } from '../interfaces/schema';
+import { Table as ITable } from '../interfaces/table';
+import { Schema } from '../interfaces/types/schema';
+
+// types
+import { ExitCode } from '../interfaces/types/exit-code';
 
 // constants
-import { ExitCode, EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
+import { EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
 
 
-export class Table implements TableInterface {
+export class Table implements ITable {
+    #data = [];
+
     public readonly name;
     public filesNumber;
     public readonly creationDate;
     public lastUpdate;
-    public readonly schema: Schema;
+    public readonly schema: Schema | null;
 
-    constructor ( name: string, schema: Schema ) {
+    constructor ( name: string, schema: Schema | null ) {
         this.name = name;
         this.filesNumber = 1;
         this.creationDate = Date.now();
         this.lastUpdate = Date.now();
-        this.schema = schema;
+        this.schema     = schema;
     }
 
     insert(): number | number[] | null {}

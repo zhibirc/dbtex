@@ -188,7 +188,7 @@ export class DbTex implements IDbTex {
          * If payload for this field is omitted then new random UUID is generated.
          * In this case it's possible to retrieve it by using hooks.
          */
-        UUID: Symbol('UUID'),
+        UUID: Symbol('UUID')
     };
 
     static audit ( config: Meta ): ExitCode {

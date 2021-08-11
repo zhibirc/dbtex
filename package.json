@@ -10,7 +10,7 @@
     },
     "license": "MIT",
     "engines": {
-        "node": ">=14.16.0"
+        "node": ">=14.17.4"
     },
     "main": "build/index.js",
     "types": "build/index.d.ts",

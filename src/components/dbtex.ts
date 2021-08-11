@@ -1,6 +1,5 @@
 // built-ins
 import path from 'path';
-import fs from 'fs';
 
 // components
 import { Table } from './table.js';
@@ -19,7 +18,7 @@ import { DriverCsv } from '../drivers/csv.js';
 import { DriverTsv } from '../drivers/tsv.js';
 
 // utilities
-import { save } from '../utilities/save.js';
+import { fs } from '../utilities/fs.js';
 import { serialize, deserialize } from '../utilities/serialize.js';
 import { convertToBytes } from '../utilities/unit-converters.js';
 import { isFileStructureAccessable } from '../utilities/file-stat.js';
@@ -57,7 +56,7 @@ export class DbTex implements IDbTex {
                 [META_INFO_FILE_NAME]: null
             }
         }) ) {
-            const meta: string = fs.readFileSync(path.join(this.location, META_INFO_FILE_NAME), 'utf8');
+            const meta: string = fs.read(path.join(this.location, META_INFO_FILE_NAME));
 
             this.#config = deserialize(meta) as Meta;
             this.#init(true);
@@ -97,8 +96,8 @@ export class DbTex implements IDbTex {
         } else {
             if ( isFileStructureAccessable(directory) ) {
                 try {
-                    fs.mkdirSync(this.location);
-                    fs.writeFileSync(
+                    fs.make(this.location, fs.types.DIRECTORY);
+                    fs.save(
                         path.join(this.location, META_INFO_FILE_NAME),
                         serialize({
                             directory,
@@ -237,13 +236,12 @@ export class DbTex implements IDbTex {
 
         try {
             const tablePath: string = path.join(this.location, name);
-            const table: Table = new Table(name, schema || null);
+            const columnTitleRow: string = this.#config.driver!.write(columnTitleData);
+            const table: Table = new Table(name, schema || null, columnTitleRow, tablePath);
 
-            fs.mkdirSync(tablePath);
-            fs.writeFileSync(
-                path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`),
-                this.#config.driver!.write(columnTitleData)
-            );
+            fs
+                .make(tablePath, fs.types.DIRECTORY)
+                .save(path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`), columnTitleRow);
 
             this.#config.tables.push(table as Table);
 
@@ -264,9 +262,9 @@ export class DbTex implements IDbTex {
 
         try {
             // all or nothing, emulate transaction approach
-            fs.unlinkSync(tablePath);
+            fs.delete(tablePath);
             this.#config.tables = this.#config.tables.filter(table => table.name !== name);
-            save(this.#config, path.join(tablePath, META_INFO_FILE_NAME));
+            fs.save(path.join(tablePath, META_INFO_FILE_NAME), serialize(this.#config));
 
             return EXIT_CODE_SUCCESS;
         } catch ( error ) {

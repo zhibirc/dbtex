@@ -1,12 +1,15 @@
 // interfaces
-import { Table as ITable } from '../interfaces/table';
-import { Schema } from '../interfaces/types/schema';
+import { Table as ITable } from '../interfaces/table.js';
+import { Schema } from '../interfaces/types/schema.js';
 
 // types
-import { ExitCode } from '../interfaces/types/exit-code';
+import { ExitCode } from '../interfaces/types/exit-code.js';
 
 // constants
-import { EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+
+// utilities
+import { fs } from '../utilities/fs.js';
 
 
 export class Table implements ITable {
@@ -14,6 +17,8 @@ export class Table implements ITable {
     #data: string[] = [];
     // @ts-ignore
     #buffer: string[] = [];
+    readonly #title: string;
+    readonly #location: string;
 
     public readonly name;
     public filesNumber;
@@ -21,12 +26,14 @@ export class Table implements ITable {
     public lastUpdate;
     public readonly schema: Schema | null;
 
-    constructor ( name: string, schema: Schema | null ) {
+    constructor ( name: string, schema: Schema | null, title: string, location: string ) {
         this.name = name;
         this.filesNumber = 1;
         this.creationDate = Date.now();
         this.lastUpdate = Date.now();
         this.schema     = schema;
+        this.#title = title;
+        this.#location = location;
     }
 
     insert(): number | number[] | null {
@@ -48,6 +55,9 @@ export class Table implements ITable {
     }
 
     deleteAll(): ExitCode {
-        return EXIT_CODE_SUCCESS;
+        this.#buffer.length = 0;
+        this.#data.length = 0;
+
+        return fs.save(this.#location, this.#title, fs.modes.TRUNC) ? EXIT_CODE_FAILURE : EXIT_CODE_SUCCESS;
     }
 }

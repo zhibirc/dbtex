@@ -82,7 +82,7 @@ const dbTex: DbTex = new DbTex({
 | Name          |  Type               | Description |
 |---------------|---------------------|-------------|
 | `location`    | instance _property_ | Absolute path to database directory (where meta-info and all tables data are stored). |
-| `audit`       | _static_ method     | Load data from meta-info file, verify all metrics being read, and compare with real database structure. |
+| `audit`       | instance _method_   | Load data from meta-info file, verify all metrics being read, and compare with real database structure. |
 | `createTable` | instance _method_   | Create table in current database and update of database meta-info metrics. |
 | `dropTable`   | instance _method_   | Drop an existing table and update of database meta-info metrics. |
 | `getStats`    | instance _method_   | Get statistics about database: general metrics, tables, paths, disk utilization, etc. |

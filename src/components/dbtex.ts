@@ -6,10 +6,13 @@ import fs from 'fs';
 import { Table } from './table.js';
 
 // interfaces
-import { DbTex as DbTexInterface } from '../interfaces/dbtex.js';
-import { Config, isConfig } from '../interfaces/config.js';
-import { Meta } from '../interfaces/meta.js';
-import { Schema } from '../interfaces/schema';
+import { DbTex as IDbTex } from '../interfaces/dbtex.js';
+import { Config, isConfig } from '../interfaces/types/config.js';
+import { Meta } from '../interfaces/types/meta.js';
+
+// types
+import { ExitCode } from '../interfaces/types/exit-code';
+import { Schema } from '../interfaces/types/schema';
 
 // drivers
 import { DriverCsv } from '../drivers/csv.js';
@@ -30,8 +33,7 @@ import { Encryptor } from '../utilities/encryptor.js';
 import { AccessError } from '../errors/access.js';
 
 // constants
-import { ExitCode, EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
-import DataType from '../constants/data-types.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
 import {
     META_INFO_FILE_NAME,
     DEFAULT_FILE_SIZE_LIMIT,
@@ -40,7 +42,7 @@ import {
 } from '../constants/meta.js';
 
 
-export class DbTex implements DbTexInterface {
+export class DbTex implements IDbTex {
     readonly #config: Meta;
     public readonly location: string;
 
@@ -169,6 +171,25 @@ export class DbTex implements DbTexInterface {
 
         return config;
     }
+
+    static types = {
+        /** Numeric values including integers and floats. */
+        NUMBER:  Symbol('NUMBER'),
+        /** String values of any length. */
+        TEXT:    Symbol('TEXT'),
+        /** Boolean values either true, false or unknown (represented by the null value). */
+        BOOLEAN: Symbol('BOOLEAN'),
+        /** Non-primitive object-like values which can be serialized. */
+        STRUCT:  Symbol('STRUCT'),
+        /** Binary string values. */
+        BINARY:  Symbol('BINARY'),
+        /**
+         * Store the Universally Unique Identifiers (UUID).
+         * If payload for this field is omitted then new random UUID is generated.
+         * In this case it's possible to retrieve it by using hooks.
+         */
+        UUID: Symbol('UUID'),
+    };
 
     static audit ( config: Meta ): ExitCode {
         log('audit proceed');

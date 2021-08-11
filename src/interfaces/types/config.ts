@@ -3,11 +3,15 @@ import path from 'path';
 import fs from 'fs';
 
 // interfaces
-import { Encryptor } from './encryptor';
-import { Dsv } from './dsv';
+import { Encryptor } from '../encryptor';
+import { Dsv } from '../dsv';
+
+// types
+import { Record } from './record';
+import { ExitCode } from './exit-code';
 
 
-export interface Config {
+export type Config = {
     /**
      * Absolute path to parent directory that will contain database subdirectory with all related structures (i.e., the "base" directory).
      *
@@ -62,17 +66,17 @@ export interface Config {
      */
     driver?: Dsv,
     // hooks on INSERT
-    beforeInsert?(record: {[key: string]: string}): {[key: string]: string},
-    afterInsert?(record: string): boolean,
+    beforeInsert?(record: Record): Record,
+    afterInsert?(record: string): ExitCode,
     // hooks on SELECT
     beforeSelect?(): boolean,
-    afterSelect?(record: string): boolean,
+    afterSelect?(record: string): ExitCode,
     // hooks on UPDATE
-    beforeUpdate?(record: {[key: string]: string}): {[key: string]: string},
-    afterUpdate?(record: string): boolean,
+    beforeUpdate?(record: Record): Record,
+    afterUpdate?(record: string): ExitCode,
     // hooks on DELETE
-    beforeDelete?(record: {[key: string]: string}): {[key: string]: string},
-    afterDelete?(record: string): boolean
+    beforeDelete?(record: Record): ExitCode,
+    afterDelete?(record: string): ExitCode
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

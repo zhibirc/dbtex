@@ -1,8 +1,8 @@
 import { Config } from './config';
-import { Table } from './table';
+import { Table } from '../table';
 
 
-export interface Meta extends Config {
+export type Meta = Config & {
     creationDate: number,
     lastUpdate: number,
     tables: Table[]

@@ -98,4 +98,4 @@ If nevertheless you decide to help to improve **DBTEX**, please read the [Contri
 
 ## License
 
-**DBTEX** is [MIT licensed](./license.md).
+**DBTEX** is licensed under the terms of the [MIT license](./license.md).

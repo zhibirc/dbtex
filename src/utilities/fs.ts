@@ -2,10 +2,10 @@
 import * as native from 'fs';
 
 // types
-import { ExitCode } from '../interfaces/types/exit-code';
+import { ExitCode } from '../interfaces/types/exit-code.js';
 
 // constants
-import { EXIT_CODE_FAILURE, EXIT_CODE_SUCCESS } from '../constants/exit-codes';
+import { EXIT_CODE_FAILURE, EXIT_CODE_SUCCESS } from '../constants/exit-codes.js';
 
 
 const fileAccessModes = {

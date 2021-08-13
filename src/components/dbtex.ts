@@ -26,7 +26,7 @@ import { validateSchema } from '../utilities/schema-validator.js';
 import { parseSchema } from '../utilities/schema-parser.js';
 import { nop } from '../utilities/nop.js';
 import { Encryptor } from '../utilities/encryptor.js';
-import { isObject } from '../utilities/isObject';
+import { isObject } from '../utilities/isObject.js';
 
 // errors
 import { AccessError } from '../errors/access.js';
@@ -107,7 +107,7 @@ export class DbTex implements IDbTex {
                             encrypt,
                             encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
                             // @ts-ignore
-                            driver: driver instanceof DriverCsv || driver instanceof DriverTsv ? driver.prototype.constructor.name : FEATURE_TYPE_CUSTOM,
+                            driver: driver instanceof DriverCsv || driver instanceof DriverTsv ? Object.getPrototypeOf(driver).constructor.name : FEATURE_TYPE_CUSTOM,
                             beforeInsert: beforeInsert!.toString(),
                             afterInsert:  afterInsert!.toString(),
                             beforeSelect: beforeSelect!.toString(),

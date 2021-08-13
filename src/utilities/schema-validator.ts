@@ -1,9 +1,9 @@
 // components
-import { DbTex } from '../components/dbtex';
+import { DbTex } from '../components/dbtex.js';
 
 // types
-import { Schema } from '../interfaces/types/schema';
-import { ExitCode } from '../interfaces/types/exit-code';
+import { Schema } from '../interfaces/types/schema.js';
+import { ExitCode } from '../interfaces/types/exit-code.js';
 
 // constants
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';

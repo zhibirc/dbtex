@@ -1,6 +1,8 @@
+// components
+import { DbTex } from '../components/dbtex.js';
+
 // types
-import { Schema } from '../interfaces/types/schema';
-import {DbTex} from '../components/dbtex';
+import { Schema } from '../interfaces/types/schema.js';
 
 
 export function parseSchema ( schema: Schema ): string[] {

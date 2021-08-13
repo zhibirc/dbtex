@@ -11,7 +11,7 @@ import { Record } from './record';
 import { ExitCode } from './exit-code';
 
 // utilities
-import { isObject } from '../../utilities/isObject';
+import { isObject } from '../../utilities/isObject.js';
 
 
 export type Config = {

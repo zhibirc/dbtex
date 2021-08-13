@@ -18,7 +18,7 @@
     "scripts": {
         "lint:ts": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
         "lint:fix": "npm run lint:ts -- --fix",
-        "test": "mocha --check-leaks --require tsconfig-paths/register --require ts-node/register tests/spec.ts",
+        "test": "mocha --check-leaks tests/spec.ts",
         "build": "tsc -p .",
         "start": "nodemon"
     },

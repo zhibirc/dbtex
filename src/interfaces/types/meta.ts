@@ -1,9 +1,20 @@
-import { Config } from './config';
-import { Table } from '../table';
+import { AppConfig } from './app-config';
 
 
-export type Meta = Config & {
+export type Meta = AppConfig & {
+    driver: string,
+    encrypt: boolean,
+    encryptor: string,
+    checksum: string | null,
     creationDate: number,
     lastUpdate: number,
-    tables: Table[]
+    tables: string,
+    beforeInsert: string,
+    afterInsert: string,
+    beforeSelect: string,
+    afterSelect: string,
+    beforeUpdate: string,
+    afterUpdate: string,
+    beforeDelete: string,
+    afterDelete: string
 }

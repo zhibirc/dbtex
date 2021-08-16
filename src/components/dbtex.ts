@@ -6,10 +6,11 @@ import { Table } from './table.js';
 
 // interfaces
 import { DbTex as IDbTex } from '../interfaces/dbtex.js';
-import { Config, isConfig } from '../interfaces/types/config.js';
-import { Meta } from '../interfaces/types/meta.js';
 
 // types
+import { UserConfig, isConfig } from '../interfaces/types/user-config.js';
+import { AppConfig } from '../interfaces/types/app-config';
+import { Meta } from '../interfaces/types/meta.js';
 import { ExitCode } from '../interfaces/types/exit-code';
 import { Schema } from '../interfaces/types/schema';
 
@@ -30,6 +31,7 @@ import { isObject } from '../utilities/isObject.js';
 
 // errors
 import { AccessError } from '../errors/access.js';
+import { ConfigError } from '../errors/config.js';
 
 // constants
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
@@ -42,10 +44,10 @@ import {
 
 
 export class DbTex implements IDbTex {
-    readonly #config: Meta;
+    readonly #config: AppConfig;
     public readonly location: string;
 
-    constructor ( config: Config ) {
+    constructor ( config: UserConfig ) {
         config = this.#sanitizeConfig(config);
 
         this.location = path.join(config.directory, config.name);
@@ -58,105 +60,33 @@ export class DbTex implements IDbTex {
         }) ) {
             const meta: string = fs.read(path.join(this.location, META_INFO_FILE_NAME));
 
-            this.#config = deserialize(meta) as Meta;
-            this.#init(true);
+            // merge configs in case we want to update something, may be dangerous
+            this.#config = {
+                ...deserialize(meta) as Meta,
+                directory: config.directory,
+                name: config.name
+            };
+            this.#init(true, config);
         } else {
+            // @ts-ignore
             this.#config = {
                 ...config,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
+                // TODO: implement
+                checksum: null,
                 tables: []
             };
-            this.#init(false);
+            this.#init(false, config);
         }
     }
 
-    #init ( exist: boolean ): void | never {
-        const {
-            directory,
-            name,
-            prefix,
-            fileSizeLimit,
-            encrypt,
-            encryptor,
-            driver,
-            beforeInsert,
-            afterInsert,
-            beforeSelect,
-            afterSelect,
-            beforeUpdate,
-            afterUpdate,
-            beforeDelete,
-            afterDelete,
-            tables
-        } = this.#config;
-
+    #init ( exist: boolean, userConfig: UserConfig ): void | never {
         if ( exist ) {
-            // TODO: this case is when configuration exists and we need to parse some fields only
-        } else {
-            if ( isFileStructureAccessable(directory) ) {
-                try {
-                    fs.make(this.location, fs.types.DIRECTORY);
-                    fs.save(
-                        path.join(this.location, META_INFO_FILE_NAME),
-                        serialize({
-                            directory,
-                            name,
-                            prefix,
-                            fileSizeLimit: convertToBytes(fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT),
-                            encrypt,
-                            encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
-                            // @ts-ignore
-                            driver: driver instanceof DriverCsv || driver instanceof DriverTsv ? Object.getPrototypeOf(driver).constructor.name : FEATURE_TYPE_CUSTOM,
-                            beforeInsert: beforeInsert!.toString(),
-                            afterInsert:  afterInsert!.toString(),
-                            beforeSelect: beforeSelect!.toString(),
-                            afterSelect:  afterSelect!.toString(),
-                            beforeUpdate: beforeUpdate!.toString(),
-                            afterUpdate:  afterUpdate!.toString(),
-                            beforeDelete: beforeDelete!.toString(),
-                            afterDelete:  afterDelete!.toString(),
-                            tables
-                        })
-                    );
-                } catch ( error ) {
-                    throw new Error(error.message);
-                }
-            } else {
-                throw new AccessError(directory);
-            }
-        }
-    }
-
-    #sanitizeConfig ( config: Config ): Config {
-        if ( isConfig(config) ) {
             const {
-                directory,
-                name,
-                prefix,
-                fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT,
-                encrypt,
-                encryptor = new Encryptor(),
-                driver = new DriverCsv(),
-                beforeInsert = nop,
-                afterInsert  = nop,
-                beforeSelect = nop,
-                afterSelect  = nop,
-                beforeUpdate = nop,
-                afterUpdate  = nop,
-                beforeDelete = nop,
-                afterDelete  = nop
-            } = config;
-
-            return {
-                directory: path.normalize(directory.trim()),
-                name: name.trim(),
-                prefix: typeof prefix === 'string' ? prefix.trim() : '',
-                fileSizeLimit,
-                encrypt: encrypt === true,
-                // type guards for encryptor and driver are not so strict, keep it in mind
-                encryptor,
                 driver,
+                encrypt,
+                encryptor,
                 beforeInsert,
                 afterInsert,
                 beforeSelect,
@@ -165,10 +95,149 @@ export class DbTex implements IDbTex {
                 afterUpdate,
                 beforeDelete,
                 afterDelete
+            } = this.#config as Meta;
+
+            const throwConfigError = (value: unknown) => {
+                throw new ConfigError(value);
+            };
+
+            // if meta config says that databases uses custom driver,
+            // then user should specify an appropriate API object for this in config
+            if ( driver === FEATURE_TYPE_CUSTOM ) {
+                if (
+                    isObject(userConfig.driver)
+                    && typeof userConfig?.driver?.write === 'function'
+                    && typeof userConfig.driver.read === 'function'
+                ) {
+                    // @ts-ignore
+                    this.#config.driver = new userConfig.driver();
+                } else {
+                    // TODO: make config error more precise
+                    throwConfigError(userConfig);
+                }
+            } else {
+                this.#config.driver = driver === DriverCsv.name
+                    ? new DriverCsv()
+                    : driver === DriverTsv.name
+                        ? new DriverTsv()
+                        : throwConfigError({driver});
+            }
+
+            switch ( true ) {
+            case encrypt:
+                if ( userConfig.encrypt ) {
+                    if ( encryptor === FEATURE_TYPE_BOX ) {
+                        this.#config.encryptor = new Encryptor();
+                    } else if ( encryptor === FEATURE_TYPE_CUSTOM ) {
+                        // @ts-ignore
+                        this.#config.encryptor = isObject(userConfig.encryptor) ? new userConfig.encryptor() : throwConfigError({userConfig});
+                    }
+                }
+            }
+
+            // TODO: implement checks for hook correctness
+            this.#config.beforeInsert = userConfig.beforeInsert || eval(beforeInsert);
+            this.#config.afterInsert  = userConfig.afterInsert  || eval(afterInsert);
+            this.#config.beforeSelect = userConfig.beforeSelect || eval(beforeSelect);
+            this.#config.afterSelect  = userConfig.afterSelect  || eval(afterSelect);
+            this.#config.beforeUpdate = userConfig.beforeUpdate || eval(beforeUpdate);
+            this.#config.afterUpdate  = userConfig.afterUpdate  || eval(afterUpdate);
+            this.#config.beforeDelete = userConfig.beforeDelete || eval(beforeDelete);
+            this.#config.afterDelete  = userConfig.afterDelete  || eval(afterDelete);
+        } else {
+            this.#config.driver ??= new DriverCsv();
+            this.#config.encrypt = userConfig.encrypt === true;
+            this.#config.encryptor ??= new Encryptor();
+
+            const {
+                directory,
+                name,
+                prefix,
+                driver,
+                encrypt,
+                encryptor,
+                fileSizeLimit,
+                creationDate,
+                lastUpdate,
+                checksum,
+                tables
+            } = this.#config;
+
+            try {
+                fs.make(this.location, fs.types.DIRECTORY);
+                fs.save(
+                    path.join(this.location, META_INFO_FILE_NAME),
+                    serialize({
+                        directory,
+                        name,
+                        prefix,
+                        fileSizeLimit: convertToBytes(fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT),
+                        encrypt,
+                        encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
+                        driver: driver instanceof DriverCsv || driver instanceof DriverTsv
+                            ? Object.getPrototypeOf(driver).constructor.name
+                            : FEATURE_TYPE_CUSTOM,
+                        beforeInsert: (this.#config.beforeInsert ??= nop).toString(),
+                        afterInsert:  (this.#config.afterInsert ??= nop).toString(),
+                        beforeSelect: (this.#config.beforeSelect ??= nop).toString(),
+                        afterSelect:  (this.#config.afterSelect ??= nop).toString(),
+                        beforeUpdate: (this.#config.beforeUpdate ??= nop).toString(),
+                        afterUpdate:  (this.#config.afterUpdate ??= nop).toString(),
+                        beforeDelete: (this.#config.beforeDelete ??= nop).toString(),
+                        afterDelete:  (this.#config.afterDelete ??= nop).toString(),
+                        creationDate,
+                        lastUpdate,
+                        checksum,
+                        tables
+                    })
+                );
+            } catch ( error ) {
+                // TODO: handle error better
+                throw new AccessError(directory);
+            }
+        }
+    }
+
+    /**
+     * User/external configuration sanitizer.
+     *
+     * 1) Check if config is something appropriate to use as a database configuration.
+     * It must be an object and has two valid key properties: "directory" and "name".
+     * Throw ConfigError if config is not "minimal-suitable".
+     * @see {@link isConfig} for further information.
+     *
+     * 2) Normalize "directory" and "name" property values for further usage.
+     *
+     * 3) Assign an exhaustive property list to result object with their initial values (including undefined).
+     * Thus filter any other possible properties which are non-compliant with Config public interface.
+     *
+     * @param {UserConfig} config - given user configuration "as is"
+     * @private
+     *
+     * @return {UserConfig} configuration prepared for further initialization
+     */
+    #sanitizeConfig ( config: UserConfig ): UserConfig | never {
+        if ( isConfig(config) ) {
+            return {
+                directory:     path.normalize(config.directory.trim()),
+                name:          config.name.trim(),
+                prefix:        typeof config.prefix === 'string' ? config.prefix.trim() : '',
+                encrypt:       config.encrypt,
+                fileSizeLimit: config.fileSizeLimit,
+                encryptor:     config.encryptor,
+                driver:        config.driver,
+                beforeInsert:  config.beforeInsert,
+                afterInsert:   config.afterInsert,
+                beforeSelect:  config.beforeSelect,
+                afterSelect:   config.afterSelect,
+                beforeUpdate:  config.beforeUpdate,
+                afterUpdate:   config.afterUpdate,
+                beforeDelete:  config.beforeDelete,
+                afterDelete:   config.afterDelete
             };
         }
 
-        return config;
+        throw new ConfigError(config);
     }
 
     static types = {

@@ -1,0 +1,18 @@
+{
+    "directory": "/Users/ysurilov/Projects/dbtex/demo",
+    "name": "test-db",
+    "prefix": "",
+    "fileSizeLimit": 102400,
+    "encrypt": false,
+    "encryptor": "box",
+    "driver": "DriverCsv",
+    "beforeInsert": "function nop(value) {\n    return value;\n}",
+    "afterInsert": "function nop(value) {\n    return value;\n}",
+    "beforeSelect": "function nop(value) {\n    return value;\n}",
+    "afterSelect": "function nop(value) {\n    return value;\n}",
+    "beforeUpdate": "function nop(value) {\n    return value;\n}",
+    "afterUpdate": "function nop(value) {\n    return value;\n}",
+    "beforeDelete": "function nop(value) {\n    return value;\n}",
+    "afterDelete": "function nop(value) {\n    return value;\n}",
+    "tables": []
+}

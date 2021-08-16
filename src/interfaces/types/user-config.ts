@@ -14,7 +14,7 @@ import { ExitCode } from './exit-code';
 import { isObject } from '../../utilities/isObject.js';
 
 
-export type Config = {
+export type UserConfig = {
     /**
      * Absolute path to parent directory that will contain database subdirectory with all related structures (i.e., the "base" directory).
      *
@@ -83,7 +83,7 @@ export type Config = {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function isConfig(config: any): config is Config {
+export function isConfig(config: any): config is UserConfig {
     try {
         return isObject(config)
             && typeof config.directory === 'string'

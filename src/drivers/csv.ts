@@ -17,9 +17,8 @@ export class DriverCsv implements Dsv {
     }
 
     write ( data: string | string[] | string[][] ): string {
-        if ( !Array.isArray(data) || data.length === 0 ) {
-            // TODO: think about uniform errors
-            throw new TypeError();
+        if ( typeof data === 'string' ) {
+            return data;
         }
 
         if ( Array.isArray(data[0]) ) {

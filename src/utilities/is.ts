@@ -15,10 +15,10 @@ export function isHook ( value: unknown ): boolean {
 
 export function isEncryptor (value: unknown): boolean {
     // @ts-ignore
-    return this.isObject(value) && typeof value.encrypt === 'function' && typeof value.decrypt === 'function';
+    return isObject(value) && typeof value.encrypt === 'function' && typeof value.decrypt === 'function';
 }
 
 export function isDriver ( value: unknown ): boolean {
     // @ts-ignore
-    return this.isObject(value) && typeof value.write === 'function' && typeof value.read === 'function';
+    return isObject(value) && typeof value.write === 'function' && typeof value.read === 'function';
 }

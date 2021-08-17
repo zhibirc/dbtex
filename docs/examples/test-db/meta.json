@@ -1,5 +1,5 @@
 {
-    "directory": "/Users/ysurilov/Projects/dbtex/demo",
+    "directory": "/Users/ysurilov/Projects/dbtex/docs/examples",
     "name": "test-db",
     "prefix": "",
     "fileSizeLimit": 102400,
@@ -14,5 +14,8 @@
     "afterUpdate": "function nop(value) {\n    return value;\n}",
     "beforeDelete": "function nop(value) {\n    return value;\n}",
     "afterDelete": "function nop(value) {\n    return value;\n}",
+    "creationDate": 1629201601385,
+    "lastUpdate": 1629201601385,
+    "checksum": null,
     "tables": []
 }

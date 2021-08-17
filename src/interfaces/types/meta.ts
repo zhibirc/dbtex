@@ -9,7 +9,7 @@ export type Meta = {
     driver: string,
     encrypt: boolean,
     encryptor: string,
-    tables: Table[] | string,
+    tables: Table[],
 
     beforeInsert: string,
     afterInsert: string,

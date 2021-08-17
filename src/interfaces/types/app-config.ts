@@ -7,6 +7,8 @@ import { ExitCode } from './exit-code.js';
 
 
 export type AppConfig = UserConfig & {
+    [key: string]: any,
+
     driver: Dsv,
     encrypt: boolean,
     encryptor: Encryptor,
@@ -23,5 +25,8 @@ export type AppConfig = UserConfig & {
 
     creationDate: number,
     lastUpdate: number,
-    checksum: string | null
+    checksum: string | null,
+
+    log: boolean,
+    report: boolean
 }

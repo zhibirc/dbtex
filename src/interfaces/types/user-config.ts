@@ -15,6 +15,8 @@ import { isObject } from '../../utilities/is.js';
 
 
 export type UserConfig = {
+    [key: string]: any,
+
     /**
      * Absolute path to parent directory that will contain database subdirectory with all related structures (i.e., the "base" directory).
      *
@@ -82,7 +84,10 @@ export type UserConfig = {
      *     fileSizeLimit: '1MB'
      * }
      */
-    fileSizeLimit?: number | string
+    fileSizeLimit?: number | string,
+
+    log?: boolean,
+    report?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

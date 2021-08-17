@@ -23,5 +23,8 @@ export type Meta = {
     fileSizeLimit: number,
     creationDate: number,
     lastUpdate: number,
-    checksum: string | null
+    checksum: string | null,
+
+    log: boolean,
+    report: boolean
 }

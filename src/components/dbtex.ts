@@ -107,7 +107,9 @@ export class DbTex implements IDbTex {
                 creationDate: this.#config.creationDate,
                 lastUpdate: this.#config.lastUpdate,
                 checksum: this.#config.checksum,
-                tables: this.#config.tables
+                tables: this.#config.tables,
+                log: this.#config.log,
+                report: this.#config.report
             };
         };
 
@@ -115,15 +117,7 @@ export class DbTex implements IDbTex {
             const {
                 driver,
                 encrypt,
-                encryptor,
-                beforeInsert,
-                afterInsert,
-                beforeSelect,
-                afterSelect,
-                beforeUpdate,
-                afterUpdate,
-                beforeDelete,
-                afterDelete
+                encryptor
             } = this.#config as unknown as Meta;
 
             const throwConfigError = (value: unknown) => {
@@ -145,9 +139,9 @@ export class DbTex implements IDbTex {
                         : throwConfigError({driver});
             }
 
-            if ( 'encrypt' in userConfig ) {
-                this.#config.encrypt = userConfig.encrypt === true;
-            }
+            'log' in userConfig && (this.#config.log = userConfig.log === true);
+            'report' in userConfig && (this.#config.report = userConfig.report === true);
+            'encrypt' in userConfig && (this.#config.encrypt = userConfig.encrypt === true);
 
             const isUserEncryptor = isEncryptor(userConfig.encryptor);
 
@@ -165,14 +159,16 @@ export class DbTex implements IDbTex {
                 isUserEncryptor && (this.#config.encryptor = new userConfig.encryptor());
             }
 
-            this.#config.beforeInsert = isHook(userConfig.beforeInsert) || eval(beforeInsert);
-            this.#config.afterInsert  = isHook(userConfig.afterInsert)  || eval(afterInsert);
-            this.#config.beforeSelect = isHook(userConfig.beforeSelect) || eval(beforeSelect);
-            this.#config.afterSelect  = isHook(userConfig.afterSelect)  || eval(afterSelect);
-            this.#config.beforeUpdate = isHook(userConfig.beforeUpdate) || eval(beforeUpdate);
-            this.#config.afterUpdate  = isHook(userConfig.afterUpdate)  || eval(afterUpdate);
-            this.#config.beforeDelete = isHook(userConfig.beforeDelete) || eval(beforeDelete);
-            this.#config.afterDelete  = isHook(userConfig.afterDelete)  || eval(afterDelete);
+            [
+                'beforeInsert',
+                'afterInsert',
+                'beforeSelect',
+                'afterSelect',
+                'beforeUpdate',
+                'afterUpdate',
+                'beforeDelete',
+                'afterDelete'
+            ].forEach(name => (this.#config[name] = isHook(userConfig[name]) || eval(this.#config[name])));
         } else {
             this.#config.fileSizeLimit = convertToBytes(this.#config.fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT);
             this.#config.driver ??= new DriverCsv();
@@ -186,16 +182,18 @@ export class DbTex implements IDbTex {
             this.#config.afterUpdate ??= nop;
             this.#config.beforeDelete ??= nop;
             this.#config.afterDelete ??= nop;
+            this.#config.log = userConfig.log === true;
+            this.#config.report = userConfig.report === true;
 
             try {
-                fs.make(this.location, fs.types.DIRECTORY);
-                fs.save(
-                    path.join(this.location, META_INFO_FILE_NAME),
-                    serialize(prepareToSerialize())
-                );
-            } catch ( error ) {
-                // TODO: handle error better
-                throw new AccessError(this.#config.directory);
+                fs
+                    .make(this.location, fs.types.DIRECTORY)
+                    .save(
+                        path.join(this.location, META_INFO_FILE_NAME),
+                        serialize(prepareToSerialize())
+                    );
+            } catch {
+                throw new AccessError(this.location);
             }
         }
     }
@@ -225,7 +223,6 @@ export class DbTex implements IDbTex {
                 name:          config.name.trim(),
                 prefix:        typeof config.prefix === 'string' ? config.prefix.trim() : '',
                 encrypt:       config.encrypt,
-                fileSizeLimit: config.fileSizeLimit,
                 encryptor:     config.encryptor,
                 driver:        config.driver,
                 beforeInsert:  config.beforeInsert,
@@ -235,7 +232,10 @@ export class DbTex implements IDbTex {
                 beforeUpdate:  config.beforeUpdate,
                 afterUpdate:   config.afterUpdate,
                 beforeDelete:  config.beforeDelete,
-                afterDelete:   config.afterDelete
+                afterDelete:   config.afterDelete,
+                fileSizeLimit: config.fileSizeLimit,
+                log:           config.log,
+                report:        config.report
             };
         }
 
@@ -315,6 +315,8 @@ export class DbTex implements IDbTex {
                 .save(path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`), columnTitleRow);
 
             this.#config.tables.push(table as Table);
+
+            // TODO: save table data to meta info
 
             return table;
         } catch ( error ) {

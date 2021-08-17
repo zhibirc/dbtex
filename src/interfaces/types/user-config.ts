@@ -11,7 +11,7 @@ import { Record } from './record';
 import { ExitCode } from './exit-code';
 
 // utilities
-import { isObject } from '../../utilities/isObject.js';
+import { isObject } from '../../utilities/is.js';
 
 
 export type UserConfig = {
@@ -37,15 +37,12 @@ export type UserConfig = {
      * }
      */
     prefix?: string,
+
     /**
-     * Specify file size limit for splitting large files, by default they are not split.
-     *
-     * @example
-     * {
-     *     fileSizeLimit: '1MB'
-     * }
+     * Read/write driver or adapter to transform table schema data to low-level "delimiter-separated values" for storing as table records and vice versa.
+     * It's possible to pass a custom driver which must to implement the Dsv interface/API.
      */
-    fileSizeLimit?: number | string,
+    driver?: Dsv,
     /**
      * Specify should database files be encrypted on save or not.
      * By default encryption is not applied.
@@ -63,11 +60,7 @@ export type UserConfig = {
      * It's possible to pass a custom encryptor which must to implement the Encryptor interface/API.
      */
     encryptor?: Encryptor,
-    /**
-     * Read/write driver or adapter to transform table schema data to low-level "delimiter-separated values" for storing as table records and vice versa.
-     * It's possible to pass a custom driver which must to implement the Dsv interface/API.
-     */
-    driver?: Dsv,
+
     // hooks on INSERT
     beforeInsert?(record: Record): Record,
     afterInsert?(record: string): ExitCode,
@@ -79,7 +72,17 @@ export type UserConfig = {
     afterUpdate?(record: string): ExitCode,
     // hooks on DELETE
     beforeDelete?(record: Record): ExitCode,
-    afterDelete?(record: string): ExitCode
+    afterDelete?(record: string): ExitCode,
+
+    /**
+     * Specify file size limit for splitting large files, by default they are not split.
+     *
+     * @example
+     * {
+     *     fileSizeLimit: '1MB'
+     * }
+     */
+    fileSizeLimit?: number | string
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

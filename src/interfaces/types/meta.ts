@@ -1,14 +1,16 @@
-import { AppConfig } from './app-config';
+import { Table } from '../table';
 
 
-export type Meta = AppConfig & {
+export type Meta = {
+    directory: string,
+    name: string,
+    prefix: string,
+
     driver: string,
     encrypt: boolean,
     encryptor: string,
-    checksum: string | null,
-    creationDate: number,
-    lastUpdate: number,
-    tables: string,
+    tables: Table[] | string,
+
     beforeInsert: string,
     afterInsert: string,
     beforeSelect: string,
@@ -16,5 +18,10 @@ export type Meta = AppConfig & {
     beforeUpdate: string,
     afterUpdate: string,
     beforeDelete: string,
-    afterDelete: string
+    afterDelete: string,
+
+    fileSizeLimit: number,
+    creationDate: number,
+    lastUpdate: number,
+    checksum: string | null
 }

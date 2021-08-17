@@ -10,9 +10,8 @@ export type AppConfig = UserConfig & {
     driver: Dsv,
     encrypt: boolean,
     encryptor: Encryptor,
-    checksum: string | null,
-    creationDate: number,
-    lastUpdate: number,
+    tables: Table[]
+
     beforeInsert(record: Record): Record,
     afterInsert(record: string): ExitCode,
     beforeSelect(): boolean,
@@ -20,6 +19,9 @@ export type AppConfig = UserConfig & {
     beforeUpdate(record: Record): Record,
     afterUpdate(record: string): ExitCode,
     beforeDelete(record: Record): ExitCode,
-    afterDelete(record: string): ExitCode
-    tables: Table[]
+    afterDelete(record: string): ExitCode,
+
+    creationDate: number,
+    lastUpdate: number,
+    checksum: string | null
 }

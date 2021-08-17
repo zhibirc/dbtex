@@ -27,7 +27,7 @@ import { validateSchema } from '../utilities/schema-validator.js';
 import { parseSchema } from '../utilities/schema-parser.js';
 import { nop } from '../utilities/nop.js';
 import { Encryptor } from '../utilities/encryptor.js';
-import { isObject } from '../utilities/isObject.js';
+import { isObject, isDriver, isEncryptor, isHook } from '../utilities/is.js';
 
 // errors
 import { AccessError } from '../errors/access.js';
@@ -61,6 +61,7 @@ export class DbTex implements IDbTex {
             const meta: string = fs.read(path.join(this.location, META_INFO_FILE_NAME));
 
             // merge configs in case we want to update something, may be dangerous
+            // @ts-ignore
             this.#config = {
                 ...deserialize(meta) as Meta,
                 directory: config.directory,
@@ -82,6 +83,34 @@ export class DbTex implements IDbTex {
     }
 
     #init ( exist: boolean, userConfig: UserConfig ): void | never {
+        const prepareToSerialize = (): Meta => {
+            const driver = this.#config.driver;
+
+            return {
+                directory: this.#config.directory,
+                name: this.#config.name,
+                prefix: this.#config.prefix as string,
+                fileSizeLimit: this.#config.fileSizeLimit as number,
+                encrypt: this.#config.encrypt,
+                encryptor: this.#config.encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
+                driver: driver instanceof DriverCsv || driver instanceof DriverTsv
+                    ? Object.getPrototypeOf(driver).constructor.name
+                    : FEATURE_TYPE_CUSTOM,
+                beforeInsert: this.#config.beforeInsert.toString(),
+                afterInsert:  this.#config.afterInsert.toString(),
+                beforeSelect: this.#config.beforeSelect.toString(),
+                afterSelect:  this.#config.afterSelect.toString(),
+                beforeUpdate: this.#config.beforeUpdate.toString(),
+                afterUpdate:  this.#config.afterUpdate.toString(),
+                beforeDelete: this.#config.beforeDelete.toString(),
+                afterDelete:  this.#config.afterDelete.toString(),
+                creationDate: this.#config.creationDate,
+                lastUpdate: this.#config.lastUpdate,
+                checksum: this.#config.checksum,
+                tables: this.#config.tables
+            };
+        };
+
         if ( exist ) {
             const {
                 driver,
@@ -95,7 +124,7 @@ export class DbTex implements IDbTex {
                 afterUpdate,
                 beforeDelete,
                 afterDelete
-            } = this.#config as Meta;
+            } = this.#config as unknown as Meta;
 
             const throwConfigError = (value: unknown) => {
                 throw new ConfigError(value);
@@ -104,17 +133,10 @@ export class DbTex implements IDbTex {
             // if meta config says that databases uses custom driver,
             // then user should specify an appropriate API object for this in config
             if ( driver === FEATURE_TYPE_CUSTOM ) {
-                if (
-                    isObject(userConfig.driver)
-                    && typeof userConfig?.driver?.write === 'function'
-                    && typeof userConfig.driver.read === 'function'
-                ) {
+                isDriver(userConfig.driver)
                     // @ts-ignore
-                    this.#config.driver = new userConfig.driver();
-                } else {
-                    // TODO: make config error more precise
-                    throwConfigError(userConfig);
-                }
+                    ? (this.#config.driver = new userConfig.driver())
+                    : throwConfigError(userConfig);
             } else {
                 this.#config.driver = driver === DriverCsv.name
                     ? new DriverCsv()
@@ -123,77 +145,57 @@ export class DbTex implements IDbTex {
                         : throwConfigError({driver});
             }
 
-            switch ( true ) {
-            case encrypt:
-                if ( userConfig.encrypt ) {
-                    if ( encryptor === FEATURE_TYPE_BOX ) {
-                        this.#config.encryptor = new Encryptor();
-                    } else if ( encryptor === FEATURE_TYPE_CUSTOM ) {
-                        // @ts-ignore
-                        this.#config.encryptor = isObject(userConfig.encryptor) ? new userConfig.encryptor() : throwConfigError({userConfig});
-                    }
-                }
+            if ( 'encrypt' in userConfig ) {
+                this.#config.encrypt = userConfig.encrypt === true;
             }
 
-            // TODO: implement checks for hook correctness
-            this.#config.beforeInsert = userConfig.beforeInsert || eval(beforeInsert);
-            this.#config.afterInsert  = userConfig.afterInsert  || eval(afterInsert);
-            this.#config.beforeSelect = userConfig.beforeSelect || eval(beforeSelect);
-            this.#config.afterSelect  = userConfig.afterSelect  || eval(afterSelect);
-            this.#config.beforeUpdate = userConfig.beforeUpdate || eval(beforeUpdate);
-            this.#config.afterUpdate  = userConfig.afterUpdate  || eval(afterUpdate);
-            this.#config.beforeDelete = userConfig.beforeDelete || eval(beforeDelete);
-            this.#config.afterDelete  = userConfig.afterDelete  || eval(afterDelete);
+            const isUserEncryptor = isEncryptor(userConfig.encryptor);
+
+            if ( encrypt ) {
+                if ( encryptor === FEATURE_TYPE_BOX ) {
+                    this.#config.encryptor = new Encryptor();
+                } else if ( encryptor === FEATURE_TYPE_CUSTOM ) {
+                    isUserEncryptor
+                        // @ts-ignore
+                        ? (this.#config.encryptor = new userConfig.encryptor())
+                        : throwConfigError(userConfig);
+                }
+            } else { // in this case we can change encryptor engine
+                // @ts-ignore
+                isUserEncryptor && (this.#config.encryptor = new userConfig.encryptor());
+            }
+
+            this.#config.beforeInsert = isHook(userConfig.beforeInsert) || eval(beforeInsert);
+            this.#config.afterInsert  = isHook(userConfig.afterInsert)  || eval(afterInsert);
+            this.#config.beforeSelect = isHook(userConfig.beforeSelect) || eval(beforeSelect);
+            this.#config.afterSelect  = isHook(userConfig.afterSelect)  || eval(afterSelect);
+            this.#config.beforeUpdate = isHook(userConfig.beforeUpdate) || eval(beforeUpdate);
+            this.#config.afterUpdate  = isHook(userConfig.afterUpdate)  || eval(afterUpdate);
+            this.#config.beforeDelete = isHook(userConfig.beforeDelete) || eval(beforeDelete);
+            this.#config.afterDelete  = isHook(userConfig.afterDelete)  || eval(afterDelete);
         } else {
+            this.#config.fileSizeLimit = convertToBytes(this.#config.fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT);
             this.#config.driver ??= new DriverCsv();
             this.#config.encrypt = userConfig.encrypt === true;
             this.#config.encryptor ??= new Encryptor();
-
-            const {
-                directory,
-                name,
-                prefix,
-                driver,
-                encrypt,
-                encryptor,
-                fileSizeLimit,
-                creationDate,
-                lastUpdate,
-                checksum,
-                tables
-            } = this.#config;
+            this.#config.beforeInsert ??= nop;
+            this.#config.afterInsert ??= nop;
+            this.#config.beforeSelect ??= nop;
+            this.#config.afterSelect ??= nop;
+            this.#config.beforeUpdate ??= nop;
+            this.#config.afterUpdate ??= nop;
+            this.#config.beforeDelete ??= nop;
+            this.#config.afterDelete ??= nop;
 
             try {
                 fs.make(this.location, fs.types.DIRECTORY);
                 fs.save(
                     path.join(this.location, META_INFO_FILE_NAME),
-                    serialize({
-                        directory,
-                        name,
-                        prefix,
-                        fileSizeLimit: convertToBytes(fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT),
-                        encrypt,
-                        encryptor: encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
-                        driver: driver instanceof DriverCsv || driver instanceof DriverTsv
-                            ? Object.getPrototypeOf(driver).constructor.name
-                            : FEATURE_TYPE_CUSTOM,
-                        beforeInsert: (this.#config.beforeInsert ??= nop).toString(),
-                        afterInsert:  (this.#config.afterInsert ??= nop).toString(),
-                        beforeSelect: (this.#config.beforeSelect ??= nop).toString(),
-                        afterSelect:  (this.#config.afterSelect ??= nop).toString(),
-                        beforeUpdate: (this.#config.beforeUpdate ??= nop).toString(),
-                        afterUpdate:  (this.#config.afterUpdate ??= nop).toString(),
-                        beforeDelete: (this.#config.beforeDelete ??= nop).toString(),
-                        afterDelete:  (this.#config.afterDelete ??= nop).toString(),
-                        creationDate,
-                        lastUpdate,
-                        checksum,
-                        tables
-                    })
+                    serialize(prepareToSerialize())
                 );
             } catch ( error ) {
                 // TODO: handle error better
-                throw new AccessError(directory);
+                throw new AccessError(this.#config.directory);
             }
         }
     }

@@ -50,12 +50,16 @@ const hasher = new Hasher();
 export class DbTex implements IDbTex {
     // main application config
     readonly #config: AppConfig;
+    // mapping of table proxy instances to corresponding revoke functions
+    #revokes: WeakMap<Table, () => void>;
+    // database location in a file system
     public readonly location: string;
 
     constructor ( config: UserConfig ) {
         config = this.#sanitizeConfig(config);
 
         this.location = path.join(config.directory, config.name);
+        this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance
         if ( isFileStructureAccessable({
@@ -339,25 +343,34 @@ export class DbTex implements IDbTex {
             const tablePath: string = path.join(this.location, name);
             const columnTitleRow: string = this.#config.driver!.write(columnTitleData);
             const table: Table = new Table(name, schema || null, columnTitleRow, tablePath);
+            // TODO: implement traps, also think to use revocable proxy for table drop
+            const _table = new Proxy(table, {
+                // implement
+            });
+            const { proxy, revoke } = Proxy.revocable(_table, {});
+            this.#revokes.set(proxy, revoke);
 
             fs
                 .make(tablePath, fs.types.DIRECTORY)
                 .save(path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`), columnTitleRow);
 
-            this.#config.tables.push(<Table>table);
+            this.#config.tables.push(<Table>proxy);
 
             // TODO: save table data to meta info
 
-            return table;
+            return proxy;
         } catch ( error ) {
             throw new AccessError(path.join(this.location, name));
         }
     }
 
-    dropTable ( name: string ): ExitCode | never {
-        name = name.trim();
+    dropTable ( table: Table | string ): ExitCode | never {
+        const name = typeof table === 'string' ? table.trim() : table?.name.trim();
+        const _table = typeof table === 'string'
+            ? this.#config.tables.find(item => item.name === name)
+            : this.#config.tables.find(item => item === table);
 
-        if ( !this.#config.tables.find(table => table.name === name ) ) {
+        if ( !_table ) {
             throw new ReferenceError(`Nothing to drop -- table name "${name}" not found.`);
         }
 
@@ -366,8 +379,10 @@ export class DbTex implements IDbTex {
         try {
             // all or nothing, emulate transaction approach
             fs.delete(tablePath);
-            this.#config.tables = this.#config.tables.filter(table => table.name !== name);
-            fs.save(path.join(this.location, META_INFO_FILE_NAME), serialize(this.#config));
+            this.#config.tables = this.#config.tables.filter(item => item !== _table);
+            // @ts-ignore
+            this.#revokes.get(<Table>_table)();
+            this.#save();
 
             return EXIT_CODE_SUCCESS;
         } catch ( error ) {

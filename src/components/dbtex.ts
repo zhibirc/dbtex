@@ -62,18 +62,21 @@ export class DbTex implements IDbTex {
                 [META_INFO_FILE_NAME]: null
             }
         }) ) {
-            const meta: string = fs.read(path.join(this.location, META_INFO_FILE_NAME));
+            const meta: Meta = <Meta>deserialize(fs.read(path.join(this.location, META_INFO_FILE_NAME)));
+            const hash: unknown = meta.checksum;
+
+            delete meta.checksum;
 
             // merge configs in case we want to update something, may be dangerous
             // @ts-ignore
             this.#config = {
-                ...deserialize(meta) as Meta,
+                ...meta,
                 directory: config.directory,
                 name: config.name
             };
 
             // verify checksum to ensure it's make sense for further initialization
-            if ( !this.#config.checksum || !hasher.verify(meta, this.#config.checksum) ) {
+            if ( !hash || !hasher.verify(serialize(meta), <string>hash) ) {
                 throw new Error('Database metadata is corrupt.');
             }
 
@@ -84,8 +87,6 @@ export class DbTex implements IDbTex {
                 ...config,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
-                // TODO: implement
-                checksum: null,
                 tables: []
             };
             this.#init(false, config);
@@ -93,42 +94,12 @@ export class DbTex implements IDbTex {
     }
 
     #init ( exist: boolean, userConfig: UserConfig ): void | never {
-        const prepareToSerialize = (): Meta => {
-            const driver = this.#config.driver;
-
-            return {
-                directory: this.#config.directory,
-                name: this.#config.name,
-                prefix: this.#config.prefix as string,
-                fileSizeLimit: this.#config.fileSizeLimit as number,
-                encrypt: this.#config.encrypt,
-                encryptor: this.#config.encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
-                driver: driver instanceof DriverCsv || driver instanceof DriverTsv
-                    ? Object.getPrototypeOf(driver).constructor.name
-                    : FEATURE_TYPE_CUSTOM,
-                beforeInsert: this.#config.beforeInsert.toString(),
-                afterInsert:  this.#config.afterInsert.toString(),
-                beforeSelect: this.#config.beforeSelect.toString(),
-                afterSelect:  this.#config.afterSelect.toString(),
-                beforeUpdate: this.#config.beforeUpdate.toString(),
-                afterUpdate:  this.#config.afterUpdate.toString(),
-                beforeDelete: this.#config.beforeDelete.toString(),
-                afterDelete:  this.#config.afterDelete.toString(),
-                creationDate: this.#config.creationDate,
-                lastUpdate: this.#config.lastUpdate,
-                checksum: this.#config.checksum,
-                tables: this.#config.tables,
-                log: this.#config.log,
-                report: this.#config.report
-            };
-        };
-
         if ( exist ) {
             const {
                 driver,
                 encrypt,
                 encryptor
-            } = this.#config as unknown as Meta;
+            } = <Meta><unknown>this.#config;
 
             const throwConfigError = (value: unknown) => {
                 throw new ConfigError(value);
@@ -179,6 +150,9 @@ export class DbTex implements IDbTex {
                 'beforeDelete',
                 'afterDelete'
             ].forEach(name => (this.#config[name] = isHook(userConfig[name]) ? userConfig[name] : eval(this.#config[name])));
+
+            // re-save configuration as meta data
+            this.#save();
         } else {
             this.#config.fileSizeLimit = convertToBytes(this.#config.fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT);
             this.#config.driver ??= new DriverCsv();
@@ -196,12 +170,8 @@ export class DbTex implements IDbTex {
             this.#config.report = userConfig.report === true;
 
             try {
-                fs
-                    .make(this.location, fs.types.DIRECTORY)
-                    .save(
-                        path.join(this.location, META_INFO_FILE_NAME),
-                        serialize(prepareToSerialize())
-                    );
+                fs.make(this.location, fs.types.DIRECTORY);
+                this.#save();
             } catch {
                 throw new AccessError(this.location);
             }
@@ -250,6 +220,47 @@ export class DbTex implements IDbTex {
         }
 
         throw new ConfigError(config);
+    }
+
+    #save () {
+        const driver = this.#config.driver;
+        const meta: Meta = {
+            directory: this.#config.directory,
+            name: this.#config.name,
+            prefix: <string>this.#config.prefix,
+            fileSizeLimit: <number>this.#config.fileSizeLimit,
+            encrypt: this.#config.encrypt,
+            encryptor: this.#config.encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
+            driver: driver instanceof DriverCsv || driver instanceof DriverTsv
+                ? Object.getPrototypeOf(driver).constructor.name
+                : FEATURE_TYPE_CUSTOM,
+            beforeInsert: this.#config.beforeInsert.toString(),
+            afterInsert:  this.#config.afterInsert.toString(),
+            beforeSelect: this.#config.beforeSelect.toString(),
+            afterSelect:  this.#config.afterSelect.toString(),
+            beforeUpdate: this.#config.beforeUpdate.toString(),
+            afterUpdate:  this.#config.afterUpdate.toString(),
+            beforeDelete: this.#config.beforeDelete.toString(),
+            afterDelete:  this.#config.afterDelete.toString(),
+            creationDate: this.#config.creationDate,
+            lastUpdate: this.#config.lastUpdate,
+            tables: this.#config.tables,
+            log: this.#config.log,
+            report: this.#config.report
+        };
+
+        meta.checksum = hasher.hash(serialize(meta));
+
+        try {
+            fs.save(
+                path.join(this.location, META_INFO_FILE_NAME),
+                serialize(meta)
+            );
+
+            return EXIT_CODE_SUCCESS;
+        } catch ( exception ) {
+            return EXIT_CODE_FAILURE;
+        }
     }
 
     static types = {
@@ -324,7 +335,7 @@ export class DbTex implements IDbTex {
                 .make(tablePath, fs.types.DIRECTORY)
                 .save(path.join(tablePath, `${table.filesNumber}_${Date.now()}.txt`), columnTitleRow);
 
-            this.#config.tables.push(table as Table);
+            this.#config.tables.push(<Table>table);
 
             // TODO: save table data to meta info
 
@@ -356,7 +367,6 @@ export class DbTex implements IDbTex {
     }
 
     shutdown(): ExitCode {
-        // stub
-        return EXIT_CODE_SUCCESS;
+        return this.#save();
     }
 }

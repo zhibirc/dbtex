@@ -27,6 +27,7 @@ import { validateSchema } from '../utilities/schema-validator.js';
 import { parseSchema } from '../utilities/schema-parser.js';
 import { nop } from '../utilities/nop.js';
 import { Encryptor } from '../utilities/encryptor.js';
+import { Hasher } from '../utilities/hasher.js';
 import { isObject, isDriver, isEncryptor, isHook } from '../utilities/is.js';
 
 // errors
@@ -41,6 +42,9 @@ import {
     FEATURE_TYPE_BOX,
     FEATURE_TYPE_CUSTOM
 } from '../constants/meta.js';
+
+
+const hasher = new Hasher();
 
 
 export class DbTex implements IDbTex {
@@ -67,6 +71,12 @@ export class DbTex implements IDbTex {
                 directory: config.directory,
                 name: config.name
             };
+
+            // verify checksum to ensure it's make sense for further initialization
+            if ( !this.#config.checksum || !hasher.verify(meta, this.#config.checksum) ) {
+                throw new Error('Database metadata is corrupt.');
+            }
+
             this.#init(true, config);
         } else {
             // @ts-ignore
@@ -168,7 +178,7 @@ export class DbTex implements IDbTex {
                 'afterUpdate',
                 'beforeDelete',
                 'afterDelete'
-            ].forEach(name => (this.#config[name] = isHook(userConfig[name]) || eval(this.#config[name])));
+            ].forEach(name => (this.#config[name] = isHook(userConfig[name]) ? userConfig[name] : eval(this.#config[name])));
         } else {
             this.#config.fileSizeLimit = convertToBytes(this.#config.fileSizeLimit || DEFAULT_FILE_SIZE_LIMIT);
             this.#config.driver ??= new DriverCsv();
@@ -337,7 +347,7 @@ export class DbTex implements IDbTex {
             // all or nothing, emulate transaction approach
             fs.delete(tablePath);
             this.#config.tables = this.#config.tables.filter(table => table.name !== name);
-            fs.save(path.join(tablePath, META_INFO_FILE_NAME), serialize(this.#config));
+            fs.save(path.join(this.location, META_INFO_FILE_NAME), serialize(this.#config));
 
             return EXIT_CODE_SUCCESS;
         } catch ( error ) {

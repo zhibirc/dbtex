@@ -48,6 +48,7 @@ const hasher = new Hasher();
 
 
 export class DbTex implements IDbTex {
+    // main application config
     readonly #config: AppConfig;
     public readonly location: string;
 
@@ -93,6 +94,10 @@ export class DbTex implements IDbTex {
         }
     }
 
+    /**
+     * Parse given config, analyze, merge with existing if any, and initialize inner structures.
+     * @private
+     */
     #init ( exist: boolean, userConfig: UserConfig ): void | never {
         if ( exist ) {
             const {
@@ -222,6 +227,10 @@ export class DbTex implements IDbTex {
         throw new ConfigError(config);
     }
 
+    /**
+     * Save database configuration and state to meta file with checksum.
+     * @private
+     */
     #save () {
         const driver = this.#config.driver;
         const meta: Meta = {

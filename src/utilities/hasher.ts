@@ -17,6 +17,7 @@ export class Hasher {
         this.#salt = 's(IsCt--ZnXwcaH2CshnaTa8UB?6thbPCxNFDkt5rKKyhwG4ztIMq6!x1A6>'.replace(/\W/g, char => String.fromCharCode(char.charCodeAt(0) * 2));
     }
 
+    // TODO: probably, implement PBKDF specification algorithm
     hash ( text: string ): string {
         this.#salt += getCharCodesSum(text);
 

@@ -79,15 +79,22 @@ const dbTex: DbTex = new DbTex({
 
 **DbTex**
 
-| Name          |  Type               | Description |
-|---------------|---------------------|-------------|
-| `location`    | instance _property_ | Absolute path to database directory (where meta-info and all tables data are stored). |
-| `audit`       | instance _method_   | Load data from meta-info file, verify all metrics being read, and compare with real database structure. |
-| `createTable` | instance _method_   | Create table in current database and update of database meta-info metrics. |
-| `dropTable`   | instance _method_   | Drop an existing table and update of database meta-info metrics. |
-| `getStats`    | instance _method_   | Get statistics about database: general metrics, tables, paths, disk utilization, etc. |
-| `setHook`     | instance _method_   | Set (add new or update of existing) additional procedure as a middleware to the CRUD flow. |
-| `shutdown`    | instance _method_   | Terminate database process gracefully. |
+| Name             | Access  | Type     | Description |
+|------------------|---------|----------|-------------|
+| `location`       | public  | property | Absolute path to database directory (where meta-info and all tables data are stored). |
+| `audit`          | public  | method   | Load data from meta-info file, verify all metrics being read, and compare with real database structure. |
+| `createTable`    | public  | method   | Create table in current database and update of database meta-info metrics. |
+| `dropTable`      | public  | method   | Drop an existing table and update of database meta-info metrics. |
+| `getStats`       | public  | method   | Get statistics about database: general metrics, tables, paths, disk utilization, etc. |
+| `setHook`        | public  | method   | Set (add new or update of existing) additional procedure as a middleware to the CRUD flow. |
+| `shutdown`       | public  | method   | Terminate database process gracefully. |
+||
+| `types`          | static  | method   | Enumeration of supported types for table fields. |
+||
+| `config`         | private | property | Main application config. |
+| `sanitizeConfig` | private | method   | User/external configuration sanitizer. |
+| `init`           | private | method   | Parse given config, analyze, merge with existing if any, and initialize inner structures. |
+| `save`           | private | method   | Save database configuration and state to meta file with checksum. |
 
 
 ## Contributing

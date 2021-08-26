@@ -1,9 +1,11 @@
 // interfaces
 import { Table as ITable } from '../interfaces/table.js';
 import { Schema } from '../interfaces/types/schema.js';
+import { Dsv } from '../interfaces/dsv';
 
 // types
 import { ExitCode } from '../interfaces/types/exit-code.js';
+import { TableConfig } from '../interfaces/types/table-config';
 
 // constants
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
@@ -15,6 +17,7 @@ import { fs } from '../utilities/fs.js';
 export class Table implements ITable {
     // @ts-ignore
     #data: string[] = [];
+    readonly #driver: Dsv;
     // @ts-ignore
     #buffer: string[] = [];
     readonly #title: string;
@@ -26,7 +29,8 @@ export class Table implements ITable {
     public lastUpdate;
     public readonly schema: Schema | null;
 
-    constructor ( name: string, schema: Schema | null, title: string, location: string ) {
+    // TODO: work on table config as a set of required data from creator (DbTex)
+    constructor ( config: TableConfig ) {
         this.name = name;
         this.filesNumber = 1;
         this.creationDate = Date.now();

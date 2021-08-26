@@ -1,5 +1,10 @@
 /**
  * Implement hashing for database meta information.
+ *
+ * Use dynamic salt for hashing. Actually, salt is building with three steps:
+ * 1) There is a fixed static random sequence of pattern /^\S{20,}$/i as a base salt.
+ * 2) Each "non-word" character is replaced by other character based on its UTF code multiplied by 2.
+ * 3) Given salt is concatenated with the sum of all character codes in input text.
  */
 
 // built-ins

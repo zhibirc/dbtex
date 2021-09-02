@@ -14,6 +14,9 @@ import { DbTex as IDbTex } from './interfaces/dbtex.js';
 // types
 import { UserConfig, isConfig } from './interfaces/types/user-config.js';
 
+// utilities
+import { log } from './utilities/log.js';
+
 
 export function DbTex (this: unknown,  config: UserConfig): IDbTex {
     if ( isConfig(config) ) {
@@ -31,5 +34,17 @@ export function DbTex (this: unknown,  config: UserConfig): IDbTex {
 
     return new _DbTex(config);
 }
+
+
+process.on('uncaughtException', (error: Error) => {
+    if ( error?.stack?.includes(DbTex.name.toLowerCase()) ) {
+        // TODO: possibly handling better
+        log(error.message);
+        process.exit(1);
+    }
+
+    // if error belongs to other application parts -- throw it further
+    throw error;
+});
 
 

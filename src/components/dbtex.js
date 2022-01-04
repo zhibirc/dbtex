@@ -4,16 +4,6 @@ import path from 'path';
 // components
 import { Table } from './table.js';
 
-// interfaces
-import { DbTex as IDbTex } from '../interfaces/dbtex.js';
-
-// types
-import { UserConfig, isConfig } from '../interfaces/types/user-config.js';
-import { AppConfig } from '../interfaces/types/app-config';
-import { Meta } from '../interfaces/types/meta.js';
-import { ExitCode } from '../interfaces/types/exit-code';
-import { Schema } from '../interfaces/types/schema';
-
 // drivers
 import { DriverCsv } from '../drivers/csv.js';
 import { DriverTsv } from '../drivers/tsv.js';
@@ -47,17 +37,20 @@ import {
 const hasher = new Hasher();
 
 
-export class DbTex implements IDbTex {
+export class DbTex {
     // main application config
-    readonly #config: AppConfig;
+    #config;
     // mapping of table proxy instances to corresponding revoke functions
-    #revokes: WeakMap<Table, () => void>;
-    // database location in a file system
-    public readonly location: string;
+    #revokes;
 
-    constructor ( config: UserConfig ) {
+    #sanitizeConfig(config) {
+        return undefined;
+    }
+
+    constructor ( config ) {
         config = this.#sanitizeConfig(config);
 
+        // database location in a file system
         this.location = path.join(config.directory, config.name);
         this.#revokes = new WeakMap();
 
@@ -67,8 +60,8 @@ export class DbTex implements IDbTex {
                 [META_INFO_FILE_NAME]: null
             }
         }) ) {
-            const meta: Meta = <Meta>deserialize(fs.read(path.join(this.location, META_INFO_FILE_NAME)));
-            const hash: unknown = meta.checksum;
+            const meta = deserialize(fs.read(path.join(this.location, META_INFO_FILE_NAME)));
+            const hash = meta.checksum;
 
             delete meta.checksum;
 
@@ -81,7 +74,7 @@ export class DbTex implements IDbTex {
             };
 
             // verify checksum to ensure it's make sense for further initialization
-            if ( !hash || !hasher.verify(serialize(meta), <string>hash) ) {
+            if ( !hash || !hasher.verify(serialize(meta), hash) ) {
                 throw new Error('Database metadata is corrupt.');
             }
 
@@ -102,15 +95,15 @@ export class DbTex implements IDbTex {
      * Parse given config, analyze, merge with existing if any, and initialize inner structures.
      * @private
      */
-    #init ( exist: boolean, userConfig: UserConfig ): void | never {
+    #init ( exist, userConfig ) {
         if ( exist ) {
             const {
                 driver,
                 encrypt,
                 encryptor
-            } = <Meta><unknown>this.#config;
+            } = this.#config;
 
-            const throwConfigError = (value: unknown) => {
+            const throwConfigError = value => {
                 throw new ConfigError(value);
             };
 
@@ -205,7 +198,7 @@ export class DbTex implements IDbTex {
      *
      * @return {UserConfig} configuration prepared for further initialization
      */
-    #sanitizeConfig ( config: UserConfig ): UserConfig | never {
+    #sanitizeConfig ( config) {
         if ( isConfig(config) ) {
             return {
                 directory:     path.normalize(config.directory.trim()),

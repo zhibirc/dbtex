@@ -1,6 +1,6 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { DbTex } from '../../build/index.js';
+import DbTex from '../../build/index.js';
 
 
 // create database

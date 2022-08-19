@@ -8,10 +8,10 @@ import { ExitCode } from '../interfaces/types/exit-code.js';
 import { TableConfig } from '../interfaces/types/table-config';
 
 // constants
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes.js';
 
 // utilities
-import { fs } from '../utilities/fs.js';
+import { fs } from '../utility/fs.js';
 
 
 export class Table implements ITable {

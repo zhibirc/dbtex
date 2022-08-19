@@ -1,5 +1,5 @@
 // components
-import { DbTex } from '../components/dbtex.js';
+import { DbTex } from '../component/dbtex.ts';
 
 
 export function parseSchema ( schema ) {

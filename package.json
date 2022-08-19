@@ -5,8 +5,7 @@
     "version": "1.0.0",
     "author": {
         "name": "Yaroslav Surilov",
-        "email": "zhibirc.echo@gmail.com",
-        "url": "http://test.directory/"
+        "email": "zhibirc.echo@gmail.com"
     },
     "license": "GPL-3.0-only",
     "engines": {
@@ -35,10 +34,12 @@
         "plain text"
     ],
     "devDependencies": {
+        "@types/node": "^18.7.6",
         "chai": "~4.3.4",
         "cross-env": "~7.0.3",
         "eslint": "~8.6.0",
         "mocha": "~9.1.3",
-        "rimraf": "~3.0.2"
+        "rimraf": "~3.0.2",
+        "typescript": "^4.7.4"
     }
 }

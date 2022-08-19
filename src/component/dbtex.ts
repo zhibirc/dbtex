@@ -2,36 +2,36 @@
 import path from 'path';
 
 // components
-import { Table } from './table.js';
+import { Table } from './table';
 
 // drivers
-import { DriverCsv } from '../drivers/csv.js';
-import { DriverTsv } from '../drivers/tsv.js';
+import { DriverCsv } from '../driver/csv.js';
+import { DriverTsv } from '../driver/tsv.js';
 
 // utilities
-import { fs } from '../utilities/fs.js';
-import { serialize, deserialize } from '../utilities/serialize.js';
-import { convertToBytes } from '../utilities/unit-converters.js';
-import { isFileStructureAccessable } from '../utilities/file-stat.js';
-import { validateSchema } from '../utilities/schema-validator.js';
-import { parseSchema } from '../utilities/schema-parser.js';
-import { nop } from '../utilities/nop.js';
-import { Encryptor } from '../utilities/encryptor.js';
-import { Hasher } from '../utilities/hasher.js';
-import { isObject, isDriver, isEncryptor, isHook } from '../utilities/is.js';
+import { fs } from '../utility/fs.js';
+import { serialize, deserialize } from '../utility/serialize.js';
+import { convertToBytes } from '../utility/unit-converters.js';
+import { isFileStructureAccessable } from '../utility/file-stat.js';
+import { validateSchema } from '../utility/schema-validator.js';
+import { parseSchema } from '../utility/schema-parser.js';
+import { nop } from '../utility/nop.js';
+import { Encryptor } from '../utility/encryptor.js';
+import { Hasher } from '../utility/hasher.js';
+import { isObject, isDriver, isEncryptor, isHook } from '../utility/is.js';
 
 // errors
-import { AccessError } from '../errors/access.js';
-import { ConfigError } from '../errors/config.js';
+import { AccessError } from '../error/access.js';
+import { ConfigError } from '../error/config.js';
 
 // constants
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes.js';
 import {
     META_INFO_FILE_NAME,
     DEFAULT_FILE_SIZE_LIMIT,
     FEATURE_TYPE_BOX,
     FEATURE_TYPE_CUSTOM
-} from '../constants/meta.js';
+} from '../constant/meta.js';
 
 
 const hasher = new Hasher();

@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 /**
  * Check if the given value is strictly an Object.
  * @export
@@ -6,7 +8,23 @@
  * @return {boolean} result
  */
 export function isObject ( value: unknown ): boolean {
-    return value !== null && typeof value === 'object';
+    return Object.prototype.toString.call(value) === '[object Object]';
+}
+
+export function isString ( value: unknown ): boolean {
+    return typeof value === 'string';
+}
+
+export function isNonEmptyString ( value: unknown ): boolean {
+    return isString(value) && (value as string).trim().length > 0;
+}
+
+export function isDirectory ( value: unknown ): boolean {
+    if ( !isNonEmptyString(value) ) return false;
+
+    const stats = fs.statSync(value as string);
+
+    return stats.isDirectory();
 }
 
 export function isHook ( value: unknown ): boolean {

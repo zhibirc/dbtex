@@ -7,6 +7,7 @@
 import path from 'path';
 
 import { Table } from './table';
+import { verifyConfig } from './config-verify';
 
 import { DriverCsv } from '../driver/csv';
 import { DriverTsv } from '../driver/tsv';
@@ -20,10 +21,9 @@ import { parseSchema } from '../utility/schema-parser.js';
 import { nop } from '../utility/nop.js';
 import { Encryptor } from '../utility/encryptor.js';
 import { Hasher } from '../utility/hasher.js';
-import { isObject, isDriver, isEncryptor, isHook } from '../utility/is.js';
+import { isObject, isDriver, isEncryptor, isHook } from '../utility/is';
 
-import { AccessError } from '../error/access.js';
-import { ConfigError } from '../error/config.js';
+
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes.js';
 import {
@@ -46,15 +46,15 @@ export class DbTex implements Idbtex{
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
-    #sanitizeConfig(config) {
-        return undefined;
-    }
-
-    constructor ( config ) {
-        config = this.#sanitizeConfig(config);
+    constructor ( config: unknown ) {
+        try {
+            verifyConfig(config)
+        } catch {
+            console.error('User config verification error');
+        }
 
         // database location in a file system
-        this.location = path.join(config.directory, config.name);
+        this.location = path.join(config.location, config.name);
         this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance
@@ -318,7 +318,13 @@ export class DbTex implements Idbtex{
         return EXIT_CODE_FAILURE;
     }
 
-    createTable ( name: string, schema?: Schema ): Table | never {
+    /**
+     * Create table in particular database.
+     *
+     * @param {string} name - name for the created table
+     * @param {JSON} [schema] - JSON schema for the created table
+     */
+    createTable ( name: string, schema?: JSON ): Table | never {
         name = this.#config.prefix + name.trim();
 
         if ( this.#config.tables.find(table => table.name === name ) ) {
@@ -370,7 +376,7 @@ export class DbTex implements Idbtex{
      * @throws {AccessError}
      */
     dropTable ( name: string ) {
-        const tableIndex = this.#config.tables.findIndex((entry: Itable) => entry.name === name);
+        const tableIndex = this.#config.tables.findIndex((item: Itable) => item.name === name);
 
         if ( tableIndex === -1 ) {
             throw new ReferenceError(`Nothing to drop, table name "${name}" not found in database.`);

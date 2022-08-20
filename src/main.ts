@@ -3,7 +3,7 @@
  */
 
 // components
-import { DbTex as _DbTex } from './component/dbtex';
+import { DbTex as _DbTex } from './module/dbtex';
 
 // interfaces
 import { DbTex as IDbTex } from './interfaces/dbtex.js';

@@ -1,14 +1,16 @@
-// built-ins
+/**
+ * Main application module.
+ * @class
+ */
+
+
 import path from 'path';
 
-// components
 import { Table } from './table';
 
-// drivers
-import { DriverCsv } from '../driver/csv.js';
-import { DriverTsv } from '../driver/tsv.js';
+import { DriverCsv } from '../driver/csv';
+import { DriverTsv } from '../driver/tsv';
 
-// utilities
 import { fs } from '../utility/fs.js';
 import { serialize, deserialize } from '../utility/serialize.js';
 import { convertToBytes } from '../utility/unit-converters.js';
@@ -20,11 +22,9 @@ import { Encryptor } from '../utility/encryptor.js';
 import { Hasher } from '../utility/hasher.js';
 import { isObject, isDriver, isEncryptor, isHook } from '../utility/is.js';
 
-// errors
 import { AccessError } from '../error/access.js';
 import { ConfigError } from '../error/config.js';
 
-// constants
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes.js';
 import {
     META_INFO_FILE_NAME,
@@ -33,11 +33,14 @@ import {
     FEATURE_TYPE_CUSTOM
 } from '../constant/meta.js';
 
+import { Idbtex } from '../interface/idbtex';
+import { Itable } from '../interface/itable';
+
 
 const hasher = new Hasher();
 
 
-export class DbTex {
+export class DbTex implements Idbtex{
     // main application config
     #config;
     // mapping of table proxy instances to corresponding revoke functions
@@ -357,33 +360,44 @@ export class DbTex {
         }
     }
 
-    dropTable ( table: Table | string ): ExitCode | never {
-        const name = typeof table === 'string' ? table.trim() : table?.name.trim();
-        const _table = typeof table === 'string'
-            ? this.#config.tables.find(item => item.name === name)
-            : this.#config.tables.find(item => item === table);
+    /**
+     * Drop/delete of given table.
+     *
+     * @param {string} name - name of the table to drop
+     *
+     * @return {boolean|} - true in case if success or an object with error reason on failure
+     * @throws {ReferenceError}
+     * @throws {AccessError}
+     */
+    dropTable ( name: string ) {
+        const tableIndex = this.#config.tables.findIndex((entry: Itable) => entry.name === name);
 
-        if ( !_table ) {
-            throw new ReferenceError(`Nothing to drop -- table name "${name}" not found.`);
+        if ( tableIndex === -1 ) {
+            throw new ReferenceError(`Nothing to drop, table name "${name}" not found in database.`);
         }
 
         const tablePath = path.join(this.location, name);
 
         try {
-            // all or nothing, emulate transaction approach
             fs.delete(tablePath);
-            this.#config.tables = this.#config.tables.filter(item => item !== _table);
-            // @ts-ignore
-            this.#revokes.get(<Table>_table)();
+            this.#config.tables.splice(tableIndex, 1);
+            // this.#revokes.get(<Table>_table)();
             this.#save();
 
-            return EXIT_CODE_SUCCESS;
-        } catch ( error ) {
-            throw new AccessError(tablePath);
+            return true;
+        } catch ( exception: unknown ) {
+            const reason = `Error on access to ${tablePath}.`;
+
+            if ( exception instanceof Error ) {
+                exception.message += `. ${reason}`;
+                throw exception;
+            }
+
+            throw new Error(reason);
         }
     }
 
-    shutdown(): ExitCode {
-        return this.#save();
-    }
+    // shutdown(): ExitCode {
+    //     return this.#save();
+    // }
 }

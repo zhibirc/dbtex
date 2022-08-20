@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 
-import { DbTex } from '../src/component/dbtex.ts';
-import { Table } from '../src/component/table.ts';
-import { DriverCsv } from '../src/driver/csv.js';
-import { DriverTsv } from '../src/driver/tsv.js';
+import { DbTex } from '../src/module/dbtex.ts';
+import { Table } from '../src/module/table.ts';
+import { DriverCsv } from '../src/driver/csv.ts';
+import { DriverTsv } from '../src/driver/tsv.ts';
 import { Encryptor } from '../src/utility/encryptor.js';
 
 

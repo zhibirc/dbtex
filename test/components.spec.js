@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 
-import { DbTex } from '../src/component/core/dbtex/dbtex.ts';
-import { Table } from '../src/component/core/table/table.ts';
-import { DriverCsv } from '../src/component/driver/csv.ts';
-import { DriverTsv } from '../src/component/driver/tsv.ts';
-import { Encryptor } from '../src/utility/encryptor.js';
+import { DbTex } from '../src/components/core/dbtex/dbtex.ts';
+import { Table } from '../src/components/core/table/table.ts';
+import { DriverCsv } from '../src/components/drivers/csv.ts';
+import { DriverTsv } from '../src/components/drivers/tsv.ts';
+import { Encryptor } from '../src/utilities/encryptor.js';
 
 
 function isClass ( value ) {

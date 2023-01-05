@@ -1,5 +1,5 @@
 // components
-import { DbTex } from '../component/core/dbtex/dbtex.ts';
+import { DbTex } from '../components/core/dbtex/dbtex.ts';
 
 // types
 import { Schema } from '../interfaces/types/schema.js';

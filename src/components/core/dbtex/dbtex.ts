@@ -9,19 +9,19 @@ import path from 'path';
 import { Table } from '../table/table';
 import { verifyConfig } from '../../config-verify';
 
-import { DriverCsv } from '../../driver/csv';
-import { DriverTsv } from '../../driver/tsv';
+import { DriverCsv } from '../../drivers/csv';
+import { DriverTsv } from '../../drivers/tsv';
 
-import { fs } from '../../../utility/fs.js';
-import { serialize, deserialize } from '../../../utility/serialize.js';
-import { convertToBytes } from '../../../utility/unit-converters.js';
-import { isFileStructureAccessable } from '../../../utility/file-stat.js';
-import { validateSchema } from '../../../utility/schema-validator.js';
-import { parseSchema } from '../../../utility/schema-parser.js';
-import { nop } from '../../../utility/nop.js';
-import { Encryptor } from '../../../utility/encryptor.js';
-import { Hasher } from '../../../utility/hasher.js';
-import { isObject, isDriver, isEncryptor, isHook } from '../../../utility/is';
+import { fs } from '../../../utilities/fs.js';
+import { serialize, deserialize } from '../../../utilities/serialize.js';
+import { convertToBytes } from '../../../utilities/unit-converters.js';
+import { isFileStructureAccessable } from '../../../utilities/file-stat.js';
+import { validateSchema } from '../../../utilities/schema-validator.js';
+import { parseSchema } from '../../../utilities/schema-parser.js';
+import { nop } from '../../../utilities/nop.js';
+import { Encryptor } from '../../../utilities/encryptor.js';
+import { Hasher } from '../../../utilities/hasher.js';
+import { isObject, isDriver, isEncryptor, isHook } from '../../../utilities/is';
 
 
 
@@ -33,24 +33,29 @@ import {
     FEATURE_TYPE_CUSTOM
 } from '../../../constant/meta.js';
 
-import { Idbtex } from './idbtex';
-import { Itable } from '../table/itable';
+// interfaces
+import IDbTex from './idbtex';
+import IConfig from './iconfig';
+import { ITable } from '../table/itable';
+
+// validators
+import validateUserConfig from '../../validators/user-config';
 
 
 const hasher = new Hasher();
 
 
-export default class DbTex implements Idbtex{
+export default class DbTex implements IDbTex {
     // main application config
     #config;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
-    constructor ( config: unknown ) {
-        try {
-            verifyConfig(config)
-        } catch {
-            console.error('User config verification error');
+    constructor ( config: IConfig ) {
+        const { error } = validateUserConfig(config);
+
+        if ( error ) {
+            throw new TypeError(`Invalid configuration: ${error}`);
         }
 
         // database location in a file system

@@ -11,7 +11,7 @@ import { TableConfig } from '../interfaces/types/table-config';
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes.js';
 
 // utilities
-import { fs } from '../../../utility/fs.js';
+import { fs } from '../../../utilities/fs.js';
 
 
 export class Table implements ITable {

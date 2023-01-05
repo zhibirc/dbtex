@@ -3,7 +3,7 @@
  */
 
 import {ConfigError} from '../error/config-error';
-import {isDirectory, isNonEmptyString, isObject} from '../utility/is';
+import {isDirectory, isNonEmptyString, isObject} from '../utilities/is';
 
 const errors = {
     NOT_OBJECT: 'Configuration file should be an object',

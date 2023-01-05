@@ -6,41 +6,41 @@
 
 import path from 'path';
 
-import { Table } from './table';
-import { verifyConfig } from './config-verify';
+import { Table } from '../table/table';
+import { verifyConfig } from '../../config-verify';
 
-import { DriverCsv } from '../driver/csv';
-import { DriverTsv } from '../driver/tsv';
+import { DriverCsv } from '../../driver/csv';
+import { DriverTsv } from '../../driver/tsv';
 
-import { fs } from '../utility/fs.js';
-import { serialize, deserialize } from '../utility/serialize.js';
-import { convertToBytes } from '../utility/unit-converters.js';
-import { isFileStructureAccessable } from '../utility/file-stat.js';
-import { validateSchema } from '../utility/schema-validator.js';
-import { parseSchema } from '../utility/schema-parser.js';
-import { nop } from '../utility/nop.js';
-import { Encryptor } from '../utility/encryptor.js';
-import { Hasher } from '../utility/hasher.js';
-import { isObject, isDriver, isEncryptor, isHook } from '../utility/is';
+import { fs } from '../../../utility/fs.js';
+import { serialize, deserialize } from '../../../utility/serialize.js';
+import { convertToBytes } from '../../../utility/unit-converters.js';
+import { isFileStructureAccessable } from '../../../utility/file-stat.js';
+import { validateSchema } from '../../../utility/schema-validator.js';
+import { parseSchema } from '../../../utility/schema-parser.js';
+import { nop } from '../../../utility/nop.js';
+import { Encryptor } from '../../../utility/encryptor.js';
+import { Hasher } from '../../../utility/hasher.js';
+import { isObject, isDriver, isEncryptor, isHook } from '../../../utility/is';
 
 
 
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes.js';
 import {
     META_INFO_FILE_NAME,
     DEFAULT_FILE_SIZE_LIMIT,
     FEATURE_TYPE_BOX,
     FEATURE_TYPE_CUSTOM
-} from '../constant/meta.js';
+} from '../../../constant/meta.js';
 
-import { Idbtex } from '../interface/idbtex';
-import { Itable } from '../interface/itable';
+import { Idbtex } from './idbtex';
+import { Itable } from '../table/itable';
 
 
 const hasher = new Hasher();
 
 
-export class DbTex implements Idbtex{
+export default class DbTex implements Idbtex{
     // main application config
     #config;
     // mapping of table proxy instances to corresponding revoke functions

@@ -15,6 +15,10 @@ export function isString ( value: unknown ): boolean {
     return typeof value === 'string';
 }
 
+export function isSet ( value: unknown ): boolean {
+    return value != undefined;
+}
+
 export function isNonEmptyString ( value: unknown ): boolean {
     return isString(value) && (value as string).trim().length > 0;
 }

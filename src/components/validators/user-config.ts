@@ -1,36 +1,43 @@
-import {IConfig} from '../core/dbtex';
-import { isObject, isString, isDirectory } from '../../utilities/is';
+/**
+ * Validate configuration given from user.
+ *
+ * @module
+ */
+
+import { isObject, isSet, isNonEmptyString, isDirectory } from '../../utilities/is';
 import getType from '../../utilities/get-type';
+import { IConfig } from '../core/dbtex';
 
 type ValidationResult = {
     error: null | string
 };
 
 /**
+ * Validate if passed data is a valid database init configuration.
  *
- * @param {*} value
+ * @param {*} value - data given from user as configuration
  *
  * @return {ValidationResult} validation result
  */
 function validate ( value: unknown ): ValidationResult {
-    let error = null;
+    const errors = [];
 
     if ( !isObject(value) ) {
-        error = `expect object, got ${getType(value)}`;
+        errors.push(`expect object, got ${getType(value)}`);
     } else {
-        const { location, name } = value as IConfig;
+        const { name, location } = value as IConfig;
 
-        if ( !isDirectory(location) ) {
-            error = '"location" is invalid directory path';
+        if ( isSet(location) && !isDirectory(location) ) {
+            errors.push('"location" is invalid directory path');
         }
 
-        if ( !isString(name) ) {
-            error += `; "name" should be of type string, got ${getType(name)}`;
+        if ( !isNonEmptyString(name) ) {
+            errors.push(`"name" should be non-empty string, got ${getType(name)}`);
         }
     }
 
     return {
-        error
+        error: errors.join('; ')
     };
 }
 

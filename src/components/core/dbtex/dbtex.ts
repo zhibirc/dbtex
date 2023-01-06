@@ -26,20 +26,15 @@ import { isObject, isDriver, isEncryptor, isHook } from '../../../utilities/is';
 
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes.js';
-import {
-    META_INFO_FILE_NAME,
-    DEFAULT_FILE_SIZE_LIMIT,
-    FEATURE_TYPE_BOX,
-    FEATURE_TYPE_CUSTOM
-} from '../../../constant/meta.js';
+import baseConfig from '../../../config/base';
 
 // interfaces
 import IDbTex from './idbtex';
 import IConfig from './iconfig';
 import { ITable } from '../table/itable';
 
-// validators
 import validateUserConfig from '../../validators/user-config';
+import normalize from '../../normalizers/user-config';
 
 
 const hasher = new Hasher();
@@ -50,6 +45,8 @@ export default class DbTex implements IDbTex {
     #config;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
+    public readonly name: string;
+    public readonly location: string;
 
     constructor ( config: IConfig ) {
         const { error } = validateUserConfig(config);
@@ -58,8 +55,11 @@ export default class DbTex implements IDbTex {
             throw new TypeError(`Invalid configuration: ${error}`);
         }
 
-        // database location in a file system
-        this.location = path.join(config.location, config.name);
+        const { name, location } = normalize(config);
+
+        this.name = name;
+        this.location = location;
+
         this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance

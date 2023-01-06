@@ -4,7 +4,7 @@
  * @module
  */
 
-import { isObject, isSet, isNonEmptyString, isDirectory } from '../../utilities/is';
+import { isObject, isSet, isNonEmptyString, isLikeNumber, isDirectory } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
 import { IConfig } from '../core/dbtex';
@@ -27,8 +27,10 @@ function validate ( value: unknown ): ValidationResult {
         };
     }
 
-    const { name, location } = value as IConfig;
+    const { name, location, fileSizeLimit } = value as IConfig;
     const errors = [];
+
+    isNonEmptyString(name) || errors.push(`name should be non-empty string, got ${getType(name)}`);
 
     // location is optional, check only if it's set
     if ( isSet(location) ) {
@@ -37,10 +39,14 @@ function validate ( value: unknown ): ValidationResult {
             : errors.push(`"${location}" is invalid directory path`);
     }
 
-    isNonEmptyString(name) || errors.push(`name should be non-empty string, got ${getType(name)}`);
+    if ( isSet(fileSizeLimit) ) {
+        if ( !isLikeNumber(fileSizeLimit) || Number(fileSizeLimit) <= 0 ) {
+            errors.push('"fileSizeLimit" property should be a positive number');
+        }
+    }
 
     return {
-        error: errors.join('; ')
+        error: errors.join(';\n')
     };
 }
 

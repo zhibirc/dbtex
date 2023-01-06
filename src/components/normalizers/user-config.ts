@@ -4,7 +4,7 @@
  */
 
 import path from 'path';
-import { isDirectory } from '../../utilities/is';
+import { isSet } from '../../utilities/is';
 import { IConfig } from '../core/dbtex';
 import baseConfig from '../../config/base';
 
@@ -20,13 +20,12 @@ interface IConfigResult extends IConfig {
  * @return {IConfig} normalized configuration
  */
 function normalize ( config: IConfig ): IConfigResult {
-    const { name, location } = config;
+    const { name, location, fileSizeLimit } = config;
 
     return {
         name,
-        location: isDirectory(location)
-            ? path.resolve(location as string)
-            : baseConfig.DATABASE_PATH
+        location: isSet(location) ? path.resolve(location as string) : baseConfig.DATABASE_PATH,
+        fileSizeLimit: isSet(fileSizeLimit) ? Number(fileSizeLimit) : baseConfig.FILE_SIZE_LIMIT
     };
 }
 

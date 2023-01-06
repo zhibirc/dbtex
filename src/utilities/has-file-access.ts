@@ -1,7 +1,7 @@
 import path from 'path';
 import fs, { PathLike } from 'fs';
 
-type Struct = string | string[] | {[key: string]: any };
+type Struct = string | string[] | {[key: string]: string[] };
 
 /**
  * Determine if given file/folder structure exists and allows access for read/write.
@@ -17,9 +17,9 @@ type Struct = string | string[] | {[key: string]: any };
  *
  * @example
  * {
- *     '/home/zhibirc/projects/app/db/shop': {
- *         'meta.json': null
- *     }
+ *     '/home/zhibirc/projects/app/db/shop': [
+ *         'meta.json'
+ *     ]
  * }
  *
  * @example
@@ -31,7 +31,7 @@ type Struct = string | string[] | {[key: string]: any };
  *     ]
  * }
  */
-export default function ( struct: Struct ): boolean {
+function hasFileAccess ( struct: Struct ): boolean {
     const paths: string[] = typeof struct === 'string'
         ? [struct]
         : Array.isArray(struct)
@@ -66,3 +66,6 @@ export default function ( struct: Struct ): boolean {
 
     return true;
 }
+
+
+export default hasFileAccess;

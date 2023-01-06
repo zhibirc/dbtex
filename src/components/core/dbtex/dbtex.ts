@@ -26,14 +26,13 @@ import { isObject, isDriver, isEncryptor, isHook } from '../../../utilities/is';
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes';
 import baseConfig from '../../../config/base';
+import validateUserConfig from '../../validators/user-config';
+import normalizeUserConfig from '../../normalizers/user-config';
+import hasFileAccess from '../../../utilities/has-file-access';
 
-// interfaces
 import IDbTex from './idbtex';
 import IConfig from './iconfig';
-import { ITable } from '../table/itable';
-
-import validateUserConfig from '../../validators/user-config';
-import normalize from '../../normalizers/user-config';
+import IMeta from './imeta';
 
 
 const hasher = new Hasher();
@@ -54,7 +53,7 @@ export default class DbTex implements IDbTex {
             throw new TypeError(`Invalid configuration: ${error}`);
         }
 
-        const { name, location } = normalize(config);
+        const { name, location } = normalizeUserConfig(config);
 
         this.name = name;
         this.location = location;
@@ -62,24 +61,26 @@ export default class DbTex implements IDbTex {
         this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance
-        if ( isFileStructureAccessable({
-            [this.location]: {
-                [baseConfig.META_INFO_FILENAME]: null
-            }
+        if ( hasFileAccess({
+            [path.join(this.location, this.name)]: [
+                baseConfig.META_INFO_FILENAME
+            ]
         }) ) {
-            const meta = deserialize(fs.read(path.join(this.location, baseConfig.META_INFO_FILENAME)));
-            const hash = meta.checksum;
+            const { error, data: meta } = deserialize(fs.read(path.join(
+                this.location,
+                this.name,
+                baseConfig.META_INFO_FILENAME
+            )));
+
+            if ( error ) {
+                throw new SyntaxError(error);
+            }
+
+            const hash = (meta as IMeta).checksum;
 
             delete meta.checksum;
 
-            // merge configs in case we want to update something, may be dangerous
-            this.#config = {
-                ...meta,
-                directory: config.directory,
-                name: config.name
-            };
-
-            // verify checksum to ensure it's make sense for further initialization
+            // verify checksum to ensure it makes sense for further initialization
             if ( !hash || !hasher.verify(serialize(meta), hash) ) {
                 throw new Error('Database metadata is corrupt.');
             }
@@ -87,7 +88,8 @@ export default class DbTex implements IDbTex {
             this.#init(true, config);
         } else {
             this.#config = {
-                ...config,
+                name,
+                location,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
                 tables: []

@@ -25,8 +25,8 @@ function normalize ( config: IConfig ): IConfigResult {
     return {
         name,
         location: isDirectory(location)
-            ? path.join(location as string, name)
-            : path.join(baseConfig.DATABASE_PATH, name)
+            ? path.resolve(location as string)
+            : baseConfig.DATABASE_PATH
     };
 }
 

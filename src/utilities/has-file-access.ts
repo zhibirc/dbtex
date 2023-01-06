@@ -1,6 +1,8 @@
 import path from 'path';
 import fs, { PathLike } from 'fs';
 
+type Struct = string | string[] | {[key: string]: any };
+
 /**
  * Determine if given file/folder structure exists and allows access for read/write.
  * @example
@@ -29,7 +31,7 @@ import fs, { PathLike } from 'fs';
  *     ]
  * }
  */
-export function isFileStructureAccessable ( struct: string | string[] | {[key: string]: any } ): boolean {
+export default function ( struct: Struct ): boolean {
     const paths: string[] = typeof struct === 'string'
         ? [struct]
         : Array.isArray(struct)

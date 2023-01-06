@@ -12,20 +12,19 @@ import { verifyConfig } from '../../config-verify';
 import { DriverCsv } from '../../drivers/csv';
 import { DriverTsv } from '../../drivers/tsv';
 
-import { fs } from '../../../utilities/fs.js';
-import { serialize, deserialize } from '../../../utilities/serialize.js';
-import { convertToBytes } from '../../../utilities/unit-converters.js';
-import { isFileStructureAccessable } from '../../../utilities/file-stat.js';
-import { validateSchema } from '../../../utilities/schema-validator.js';
-import { parseSchema } from '../../../utilities/schema-parser.js';
-import { nop } from '../../../utilities/nop.js';
-import { Encryptor } from '../../../utilities/encryptor.js';
-import { Hasher } from '../../../utilities/hasher.js';
+import { fs } from '../../../utilities/fs';
+import { serialize, deserialize } from '../../../utilities/serialize';
+import { convertToBytes } from '../../../utilities/unit-converters';
+import { validateSchema } from '../../../utilities/schema-validator';
+import { parseSchema } from '../../../utilities/schema-parser';
+import { nop } from '../../../utilities/nop';
+import { Encryptor } from '../../../utilities/encryptor';
+import { Hasher } from '../../../utilities/hasher';
 import { isObject, isDriver, isEncryptor, isHook } from '../../../utilities/is';
 
 
 
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes.js';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes';
 import baseConfig from '../../../config/base';
 
 // interfaces
@@ -65,16 +64,15 @@ export default class DbTex implements IDbTex {
         // try to use existent database from persistent storage instead of creating new instance
         if ( isFileStructureAccessable({
             [this.location]: {
-                [META_INFO_FILE_NAME]: null
+                [baseConfig.META_INFO_FILENAME]: null
             }
         }) ) {
-            const meta = deserialize(fs.read(path.join(this.location, META_INFO_FILE_NAME)));
+            const meta = deserialize(fs.read(path.join(this.location, baseConfig.META_INFO_FILENAME)));
             const hash = meta.checksum;
 
             delete meta.checksum;
 
             // merge configs in case we want to update something, may be dangerous
-            // @ts-ignore
             this.#config = {
                 ...meta,
                 directory: config.directory,
@@ -88,7 +86,6 @@ export default class DbTex implements IDbTex {
 
             this.#init(true, config);
         } else {
-            // @ts-ignore
             this.#config = {
                 ...config,
                 creationDate: Date.now(),

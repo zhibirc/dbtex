@@ -1,8 +1,14 @@
+/**
+ * Interface for meta-information database configuration file.
+ *
+ * @interface
+ */
+
 type TEncryptor = 'box';
 type TDriver = 'csv' | 'tsv';
 type THook = (value: unknown) => unknown;
 
-interface IMeta {
+interface IMetaInfo {
     location: string,
     name: string,
     prefix: string,
@@ -25,4 +31,4 @@ interface IMeta {
 }
 
 
-export default IMeta;
+export default IMetaInfo;

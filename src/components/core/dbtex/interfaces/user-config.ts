@@ -4,7 +4,7 @@
  * @interface
  */
 
-interface IConfig {
+interface IUserConfig {
     /**
      * Name for database being created.
      *
@@ -27,7 +27,15 @@ interface IConfig {
      * @readonly
      */
     readonly fileSizeLimit?: number;
+
+    /**
+     * Should table files be encrypted or not.
+     * This is about how data will be stored internally, user shouldn't care about this.
+     *
+     * @readonly
+     */
+    readonly encrypt?: boolean
 }
 
 
-export default IConfig;
+export default IUserConfig;

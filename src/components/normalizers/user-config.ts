@@ -5,21 +5,21 @@
 
 import path from 'path';
 import { isSet } from '../../utilities/is';
-import { IConfig } from '../core/dbtex';
+import { UserConfig } from '../core/dbtex';
 import baseConfig from '../../config/base';
 
-interface IConfigResult extends IConfig {
+interface IConfigResult extends UserConfig {
     location: string
 }
 
 /**
  * Normalize configuration.
  *
- * @param {IConfig} config - configuration given from user
+ * @param {UserConfig} config - configuration given from user
  *
- * @return {IConfig} normalized configuration
+ * @return {UserConfig} normalized configuration
  */
-function normalize ( config: IConfig ): IConfigResult {
+function normalize ( config: UserConfig ): IConfigResult {
     const { name, location, fileSizeLimit } = config;
 
     return {

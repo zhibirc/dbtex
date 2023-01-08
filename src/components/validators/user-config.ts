@@ -7,7 +7,7 @@
 import { isObject, isSet, isNonEmptyString, isLikeNumber, isDirectory } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
-import { IConfig } from '../core/dbtex';
+import { UserConfig } from '../core/dbtex';
 
 type ValidationResult = {
     error: null | string
@@ -27,7 +27,7 @@ function validate ( value: unknown ): ValidationResult {
         };
     }
 
-    const { name, location, fileSizeLimit } = value as IConfig;
+    const { name, location, fileSizeLimit } = value as UserConfig;
     const errors = [];
 
     isNonEmptyString(name) || errors.push(`name should be non-empty string, got ${getType(name)}`);

@@ -4,10 +4,9 @@
  * @interface
  */
 
-import { ITable } from '../table/itable';
+import { ITable } from '../../table/itable';
 
-
-export default interface IDbTex {
+interface IDbtex {
     /**
      * Database files location.
      *
@@ -26,3 +25,6 @@ export default interface IDbTex {
 
     dropTable: (name: string) => boolean | never;
 }
+
+
+export default IDbtex;

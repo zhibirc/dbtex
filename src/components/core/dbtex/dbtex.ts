@@ -28,22 +28,22 @@ import validateUserConfig from '../../validators/user-config';
 import normalizeUserConfig from '../../normalizers/user-config';
 import hasFileAccess from '../../../utilities/has-file-access';
 
-import IDbTex from './idbtex';
-import IConfig from './iconfig';
-import IMeta from './imeta';
+import Dbtex from './interfaces/idbtex';
+import UserConfig from './interfaces/iconfig';
+import MetaInfo from './interfaces/imeta';
 
 
 const hasher = new Hasher();
 
 
-export default class DbTex implements IDbTex {
-    #config!: IMeta;
+export default class DbTex implements Dbtex {
+    #config!: MetaInfo;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
     public readonly name: string;
     public readonly location: string;
 
-    constructor ( config: IConfig ) {
+    constructor ( config: UserConfig ) {
         const { error } = validateUserConfig(config);
 
         if ( error ) {
@@ -73,7 +73,7 @@ export default class DbTex implements IDbTex {
                 throw new SyntaxError(error);
             }
 
-            const hash = (meta as IMeta).checksum;
+            const hash = (meta as MetaInfo).checksum;
 
             delete meta.checksum;
 
@@ -99,7 +99,7 @@ export default class DbTex implements IDbTex {
      * @param {boolean} isExist - is database already exist or new one should be created
      * @param {Object} [config] - initialization options for new database
      */
-    #init ( isExist: boolean, config: IConfig ) {
+    #init ( isExist: boolean, config: UserConfig ) {
         if ( isExist ) {
             const {
                 driver,

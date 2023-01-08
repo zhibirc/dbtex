@@ -4,10 +4,17 @@
  * @module
  */
 
-import { isObject, isSet, isNonEmptyString, isLikeNumber, isDirectory } from '../../utilities/is';
+import {
+    isSet,
+    isObject,
+    isBoolean,
+    isNonEmptyString,
+    isPositiveNumber,
+    isDirectory
+} from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
-import { UserConfig } from '../core/dbtex';
+import { IUserConfig } from '../core/dbtex';
 
 type ValidationResult = {
     error: null | string
@@ -20,14 +27,14 @@ type ValidationResult = {
  *
  * @return {ValidationResult} validation result
  */
-function validate ( value: unknown ): ValidationResult {
+function validate ( value: IUserConfig ): ValidationResult {
     if ( !isObject(value) ) {
         return {
             error: `expect object, got ${getType(value)}`
         };
     }
 
-    const { name, location, fileSizeLimit } = value as UserConfig;
+    const { name, location, fileSizeLimit, encrypt } = value;
     const errors = [];
 
     isNonEmptyString(name) || errors.push(`name should be non-empty string, got ${getType(name)}`);
@@ -39,10 +46,12 @@ function validate ( value: unknown ): ValidationResult {
             : errors.push(`"${location}" is invalid directory path`);
     }
 
-    if ( isSet(fileSizeLimit) ) {
-        if ( !isLikeNumber(fileSizeLimit) || Number(fileSizeLimit) <= 0 ) {
-            errors.push('"fileSizeLimit" property should be a positive number');
-        }
+    if ( isSet(fileSizeLimit) && !isPositiveNumber(fileSizeLimit) ) {
+        errors.push('"fileSizeLimit" property should be a positive number');
+    }
+
+    if ( isSet(encrypt) && !isBoolean(encrypt) ) {
+        errors.push(`"encrypt" property should be a boolean value, got ${getType(encrypt)}`);
     }
 
     return {

@@ -1,10 +1,12 @@
 import DbTex from './dbtex';
-import Dbtex from './interfaces/idbtex';
-import UserConfig from './interfaces/iconfig';
+import IDbTex from './interfaces/dbtex';
+import IUserConfig from './interfaces/user-config';
+import IMetaInfo from './interfaces/meta-info';
 
 
 export {
     DbTex,
-    Dbtex,
-    UserConfig
+    IDbTex,
+    IUserConfig,
+    IMetaInfo
 };

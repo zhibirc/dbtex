@@ -28,22 +28,22 @@ import validateUserConfig from '../../validators/user-config';
 import normalizeUserConfig from '../../normalizers/user-config';
 import hasFileAccess from '../../../utilities/has-file-access';
 
-import Dbtex from './interfaces/idbtex';
-import UserConfig from './interfaces/iconfig';
-import MetaInfo from './interfaces/imeta';
+import IDbTex from './interfaces/dbtex';
+import IUserConfig from './interfaces/user-config';
+import IMetaInfo from './interfaces/meta-info';
 
 
 const hasher = new Hasher();
 
 
-export default class DbTex implements Dbtex {
-    #config!: MetaInfo;
+export default class DbTex implements IDbTex {
+    #config!: IMetaInfo;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
     public readonly name: string;
     public readonly location: string;
 
-    constructor ( config: UserConfig ) {
+    constructor ( config: IUserConfig ) {
         const { error } = validateUserConfig(config);
 
         if ( error ) {

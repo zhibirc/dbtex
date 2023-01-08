@@ -19,8 +19,16 @@ function isString ( value: unknown ): boolean {
     return typeof value === 'string';
 }
 
+function isBoolean ( value: unknown ): boolean {
+    return value === true || value === false;
+}
+
 function isNonEmptyString ( value: unknown ): boolean {
     return isString(value) && (value as string).trim().length > 0;
+}
+
+function isPositiveNumber ( value: unknown ) {
+    return typeof value === 'number' && !Number.isNaN(value) && value > 0;
 }
 
 function isLikeNumber ( value: unknown ): boolean {
@@ -52,7 +60,9 @@ export {
     isSet,
     isObject,
     isString,
+    isBoolean,
     isNonEmptyString,
+    isPositiveNumber,
     isLikeNumber,
     isDirectory,
     isHook,

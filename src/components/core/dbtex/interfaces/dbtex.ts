@@ -1,12 +1,12 @@
 /**
- * Interface for main DBTEX application module.
+ * Interface for main DbTex application module.
  *
  * @interface
  */
 
 import { ITable } from '../../table/itable';
 
-interface IDbtex {
+interface IDbTex {
     /**
      * Database files location.
      *
@@ -27,4 +27,4 @@ interface IDbtex {
 }
 
 
-export default IDbtex;
+export default IDbTex;

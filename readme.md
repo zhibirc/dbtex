@@ -1,8 +1,8 @@
 # dbtex
 
-[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](license.md)
-![Maintenance](https://img.shields.io/maintenance/yes/2021?color=brightgreen&style=flat-square) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zhibirc/dbtex?color=brightgreen&style=flat-square) [![dependencies Status](https://status.david-dm.org/gh/zhibirc/dbtex.svg?style=flat-square)](https://david-dm.org/zhibirc/dbtex)
-![Lines of code](https://img.shields.io/tokei/lines/github/zhibirc/dbtex?color=yellow&style=flat-square) ![GitHub repo size](https://img.shields.io/github/repo-size/zhibirc/dbtex?color=yellow&style=flat-square)
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](license.md)
+![Maintenance](https://img.shields.io/maintenance/yes/2023?color=brightgreen) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zhibirc/dbtex?color=brightgreen) [![dependencies Status](https://status.david-dm.org/gh/zhibirc/dbtex.svg)](https://david-dm.org/zhibirc/dbtex)
+![Lines of code](https://img.shields.io/tokei/lines/github/zhibirc/dbtex?color=yellow) ![GitHub repo size](https://img.shields.io/github/repo-size/zhibirc/dbtex?color=yellow)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-magenta.svg)]()
 
 **DBTEX** is a lightweight, flat-file, embedded, zero-dependant database designed for using in non-ACID and relatively simple Node.js applications as an external dependency.
@@ -67,7 +67,7 @@ import { DbTex } from 'dbtex';
 // Instantiate and create database (if not exists) in path: database-parent-directory/name-of-database.
 // Also specify the file size limit for table data and that it should be encrypted with built-in encoder.
 const dbTex: DbTex = new DbTex({
-    directory: 'databases_parent_directory',
+    location: 'databases_parent_directory',
     name: 'database_name',
     fileSizeLimit: '1MB',
     encrypt: true

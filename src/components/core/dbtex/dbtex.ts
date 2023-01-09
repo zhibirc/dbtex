@@ -40,8 +40,6 @@ export default class DbTex implements IDbTex {
     #config!: IMetaInfo;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
-    public readonly name: string;
-    public readonly location: string;
 
     constructor ( config: IUserConfig ) {
         const { error } = validateUserConfig(config);
@@ -50,22 +48,19 @@ export default class DbTex implements IDbTex {
             throw new TypeError(`Invalid configuration: ${error}`);
         }
 
-        const { name, location, fileSizeLimit } = normalizeUserConfig(config);
-
-        this.name = name;
-        this.location = location;
+        const { name, location, fileSizeLimit, encrypt } = normalizeUserConfig(config);
 
         this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance
         if ( hasFileAccess({
-            [path.join(this.location, this.name)]: [
+            [path.join(location, name)]: [
                 baseConfig.META_INFO_FILENAME
             ]
         }) ) {
             const { error, data: meta } = deserialize(fs.read(path.join(
-                this.location,
-                this.name,
+                location,
+                name,
                 baseConfig.META_INFO_FILENAME
             )));
 
@@ -73,20 +68,25 @@ export default class DbTex implements IDbTex {
                 throw new SyntaxError(error);
             }
 
-            const hash = (meta as MetaInfo).checksum;
+            const hash = (meta as IMetaInfo).checksum;
 
             delete meta.checksum;
 
             // verify checksum to ensure it makes sense for further initialization
             if ( !hash || !hasher.verify(serialize(meta), hash) ) {
-                throw new Error('Database metadata is corrupt, checksum mismatch');
+                throw new Error('database metadata is corrupt, checksum mismatch');
             }
 
-            this.#init(true);
+            this.#init(true, {
+                ...meta,
+                checksum: hash
+            });
         } else {
             this.#init(false, {
-                name: this.name,
-                location: this.location
+                name,
+                location,
+                fileSizeLimit,
+                encrypt
             });
         }
     }
@@ -99,7 +99,7 @@ export default class DbTex implements IDbTex {
      * @param {boolean} isExist - is database already exist or new one should be created
      * @param {Object} [config] - initialization options for new database
      */
-    #init ( isExist: boolean, config: UserConfig ) {
+    #init ( isExist: boolean, config: IMetaInfo | IUserConfig ) {
         if ( isExist ) {
             const {
                 driver,

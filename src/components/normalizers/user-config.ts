@@ -5,27 +5,30 @@
 
 import path from 'path';
 import { isSet } from '../../utilities/is';
-import { UserConfig } from '../core/dbtex';
+import { IUserConfig } from '../core/dbtex';
 import baseConfig from '../../config/base';
 
-interface IConfigResult extends UserConfig {
-    location: string
+interface IConfigResult extends IUserConfig {
+    location: string;
+    fileSizeLimit: number;
+    encrypt: boolean;
 }
 
 /**
  * Normalize configuration.
  *
- * @param {UserConfig} config - configuration given from user
+ * @param {IUserConfig} config - configuration given from user
  *
- * @return {UserConfig} normalized configuration
+ * @return {IConfigResult} normalized configuration
  */
-function normalize ( config: UserConfig ): IConfigResult {
-    const { name, location, fileSizeLimit } = config;
+function normalize ( config: IUserConfig ): IConfigResult {
+    const { name, location, fileSizeLimit, encrypt } = config;
 
     return {
         name,
         location: isSet(location) ? path.resolve(location as string) : baseConfig.DATABASE_PATH,
-        fileSizeLimit: isSet(fileSizeLimit) ? Number(fileSizeLimit) : baseConfig.FILE_SIZE_LIMIT
+        fileSizeLimit: fileSizeLimit || baseConfig.FILE_SIZE_LIMIT,
+        encrypt: encrypt ?? false
     };
 }
 

@@ -31,6 +31,7 @@ import hasFileAccess from '../../../utilities/has-file-access';
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
 import IMetaInfo from './interfaces/meta-info';
+import { IConfigResult } from '../../normalizers/user-config';
 
 
 const hasher = new Hasher();
@@ -97,9 +98,9 @@ export default class DbTex implements IDbTex {
      * @private
      *
      * @param {boolean} isExist - is database already exist or new one should be created
-     * @param {Object} [config] - initialization options for new database
+     * @param {Object} config - initialization options for new database
      */
-    #init ( isExist: boolean, config: IMetaInfo | IUserConfig ) {
+    #init ( isExist: boolean, config: IMetaInfo | IConfigResult ) {
         if ( isExist ) {
             const {
                 driver,
@@ -107,8 +108,8 @@ export default class DbTex implements IDbTex {
                 encryptor
             } = this.#config;
 
-            const throwConfigError = value => {
-                throw new ConfigError(value);
+            const throwConfigError = <T>(value: T): never => {
+                throw new TypeError(`configuration error: ${value as T}`);
             };
 
             // if meta config says that databases uses custom driver,
@@ -136,12 +137,10 @@ export default class DbTex implements IDbTex {
                     this.#config.encryptor = new Encryptor();
                 } else if ( encryptor === FEATURE_TYPE_CUSTOM ) {
                     isUserEncryptor
-                        // @ts-ignore
                         ? (this.#config.encryptor = new config.encryptor())
                         : throwConfigError(config);
                 }
             } else { // in this case we can change encryptor engine
-                // @ts-ignore
                 isUserEncryptor && (this.#config.encryptor = new config.encryptor());
             }
 
@@ -161,13 +160,13 @@ export default class DbTex implements IDbTex {
         } else {
             this.#config.name = config.name;
             this.#config.location = config.location;
+            this.#config.fileSizeLimit = convertToBytes(config.fileSizeLimit);
+            this.#config.encrypt = config.encrypt;
+            this.#config.encryptor ??= new Encryptor();
             this.#config.creationDate = Date.now();
             this.#config.lastUpdate = Date.now();
             this.#config.tables = [];
-            this.#config.fileSizeLimit = convertToBytes(config.fileSizeLimit || baseConfig.FILE_SIZE_LIMIT);
-            this.#config.driver ??= new DriverCsv();
-            this.#config.encrypt = config.encrypt === true;
-            this.#config.encryptor ??= new Encryptor();
+            this.#config.driver = new DriverCsv();
             this.#config.beforeInsert ??= nop;
             this.#config.afterInsert ??= nop;
             this.#config.beforeSelect ??= nop;
@@ -180,10 +179,10 @@ export default class DbTex implements IDbTex {
             this.#config.report = config.report === true;
 
             try {
-                fs.make(path.join(this.location, this.name), fs.types.DIRECTORY);
+                fs.make(path.join(this.#config.location, this.#config.name), fs.types.DIRECTORY);
                 this.#save();
             } catch {
-                throw new Error(this.location);
+                throw new Error(this.#config.location);
             }
         }
     }

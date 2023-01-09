@@ -33,4 +33,5 @@ function normalize ( config: IUserConfig ): IConfigResult {
 }
 
 
+export { IConfigResult };
 export default normalize;

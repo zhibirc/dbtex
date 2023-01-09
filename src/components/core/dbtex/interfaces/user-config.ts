@@ -34,7 +34,16 @@ interface IUserConfig {
      *
      * @readonly
      */
-    readonly encrypt?: boolean
+    readonly encrypt?: boolean;
+
+    /**
+     * Prefix substring for table files being created.
+     * Usually, it's additional meta-information or scope indication in some form.
+     * Might be a static string or a function which return the desired value, for dynamic construction.
+     *
+     * @readonly
+     */
+    readonly prefix?: string | (() => string);
 }
 
 

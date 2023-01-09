@@ -1,3 +1,7 @@
+/**
+ * Set of utility helper functions/checkers for application business logic.
+ */
+
 import fs from 'fs';
 
 function isSet ( value: unknown ): boolean {
@@ -35,6 +39,19 @@ function isLikeNumber ( value: unknown ): boolean {
     return Number.isFinite(parseFloat(<string>value));
 }
 
+function isPrefix ( value: unknown ): boolean {
+    if ( isNonEmptyString(value) ) {
+        return true;
+    }
+
+    if ( typeof value === 'function' ) {
+        // it should return a string to be a valid table prefix "generator"
+        return isNonEmptyString(value());
+    }
+
+    return false;
+}
+
 function isDirectory ( value: unknown ): boolean {
     if ( !isNonEmptyString(value) ) return false;
 
@@ -64,6 +81,7 @@ export {
     isNonEmptyString,
     isPositiveNumber,
     isLikeNumber,
+    isPrefix,
     isDirectory,
     isHook,
     isEncryptor,

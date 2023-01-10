@@ -16,7 +16,7 @@ import { convertToBytes } from '../../utilities/unit-converters';
 import { validateSchema } from '../../utilities/schema-validator';
 import { parseSchema } from '../../utilities/schema-parser';
 import { nop } from '../../utilities/nop';
-import { Encryptor } from '../encryptors/encryptor';
+import Encryptor from '../encryptors/encryptor';
 import { Hasher } from '../../utilities/hasher';
 import { isObject, isDriver, isEncryptor, isHook } from '../../utilities/is';
 
@@ -183,50 +183,6 @@ export default class DbTex implements IDbTex {
                 throw new Error(this.#config.location);
             }
         }
-    }
-
-    /**
-     * User/external configuration sanitizer.
-     *
-     * 1) Check if config is something appropriate to use as a database configuration.
-     * It must be an object and has two valid key properties: "directory" and "name".
-     * Throw ConfigError if config is not "minimal-suitable".
-     * @see {@link isConfig} for further information.
-     *
-     * 2) Normalize "directory" and "name" property values for further usage.
-     *
-     * 3) Assign an exhaustive property list to result object with their initial values (including undefined).
-     * Thus filter any other possible properties which are non-compliant with Config public interface.
-     *
-     * @param {UserConfig} config - given user configuration "as is"
-     * @private
-     *
-     * @return {UserConfig} configuration prepared for further initialization
-     */
-    #sanitizeConfig ( config) {
-        if ( isConfig(config) ) {
-            return {
-                directory:     path.normalize(config.directory.trim()),
-                name:          config.name.trim(),
-                prefix:        typeof config.prefix === 'string' ? config.prefix.trim() : '',
-                encrypt:       config.encrypt,
-                encryptor:     config.encryptor,
-                driver:        config.driver,
-                beforeInsert:  config.beforeInsert,
-                afterInsert:   config.afterInsert,
-                beforeSelect:  config.beforeSelect,
-                afterSelect:   config.afterSelect,
-                beforeUpdate:  config.beforeUpdate,
-                afterUpdate:   config.afterUpdate,
-                beforeDelete:  config.beforeDelete,
-                afterDelete:   config.afterDelete,
-                fileSizeLimit: config.fileSizeLimit,
-                log:           config.log,
-                report:        config.report
-            };
-        }
-
-        throw new ConfigError(config);
     }
 
     /**

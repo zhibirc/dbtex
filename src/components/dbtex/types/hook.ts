@@ -1,4 +1,4 @@
-type THook = (value: unknown) => unknown;
+type THook = (...args: unknown[]) => unknown;
 
 
 export default THook;

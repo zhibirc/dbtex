@@ -8,7 +8,7 @@ import {
     isSet,
     isObject,
     isBoolean,
-    isNonEmptyString,
+    isName,
     isPositiveNumber,
     isDirectory,
     isPrefix
@@ -44,7 +44,8 @@ function validate ( value: IUserConfig ): ValidationResult {
     } = value;
     const errors = [];
 
-    isNonEmptyString(name) || errors.push(`"name" should be non-empty string, got ${getType(name)}`);
+    // TODO: improve error message
+    isName(name) || errors.push(`"name" should be non-empty string consisted of [A-Za-z0-9_] only, got ${getType(name)}`);
 
     // location is optional, check only if it's set (as well as many other options)
     if ( isSet(location) ) {

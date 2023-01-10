@@ -6,6 +6,7 @@
 
 import ITransformer from '../../transformers/interfaces/transformer';
 import IEncryptor from '../../encryptors/interfaces/encryptor';
+import THook from '../types/hook';
 
 interface IUserConfig {
     /**
@@ -62,16 +63,23 @@ interface IUserConfig {
      *
      * @readonly
      */
-    transformer?: ITransformer,
+    readonly transformer?: ITransformer | 'csv' | 'tsv';
 
-    beforeInsert: THook,
-    afterInsert(): THook,
-    beforeSelect: THook,
-    afterSelect: THook,
-    beforeUpdate: THook,
-    afterUpdate: THook,
-    beforeDelete: THook,
-    afterDelete: THook,
+    readonly beforeInsert?: THook;
+
+    readonly afterInsert?: THook;
+
+    readonly beforeSelect?: THook;
+
+    readonly afterSelect?: THook;
+
+    readonly beforeUpdate?: THook;
+
+    readonly afterUpdate?: THook;
+
+    readonly beforeDelete?: THook;
+
+    readonly afterDelete?: THook;
 }
 
 

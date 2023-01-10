@@ -26,6 +26,7 @@ function normalize ( config: IUserConfig ): IConfigResult {
 
     return {
         name,
+        // TODO: check if we should do path.normalize(location)
         location: isSet(location) ? path.resolve(location as string) : baseConfig.DATABASE_PATH,
         fileSizeLimit: fileSizeLimit || baseConfig.FILE_SIZE_LIMIT,
         encrypt: encrypt ?? false

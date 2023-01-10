@@ -39,6 +39,10 @@ function isLikeNumber ( value: unknown ): boolean {
     return Number.isFinite(parseFloat(<string>value));
 }
 
+function isName ( value: unknown ): boolean {
+    return isNonEmptyString(value) && /^_{,2}(?=.*[a-z])(?=.*\d)[a-z\d]{2,63}_{,2}$/i.test(value as string);
+}
+
 function isPrefix ( value: unknown ): boolean {
     if ( isNonEmptyString(value) ) {
         return true;
@@ -81,6 +85,7 @@ export {
     isNonEmptyString,
     isPositiveNumber,
     isLikeNumber,
+    isName,
     isPrefix,
     isDirectory,
     isHook,

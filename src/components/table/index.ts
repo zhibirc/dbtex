@@ -1,5 +1,5 @@
 import {Table} from './table';
-import {Itable} from './itable';
+import {Itable} from './interfaces/table';
 
 
 export {

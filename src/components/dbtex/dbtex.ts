@@ -7,31 +7,29 @@
 import path from 'path';
 
 import { Table } from '../table/table';
-import { verifyConfig } from '../../config-verify';
+import CsvTransformer from '../transformers/csv';
+import TsvTransformer from '../transformers/tsv';
 
-import { DriverCsv } from '../../drivers/csv';
-import { DriverTsv } from '../../drivers/tsv';
+import { fs } from '../../utilities/fs';
+import { serialize, deserialize } from '../../utilities/serialize';
+import { convertToBytes } from '../../utilities/unit-converters';
+import { validateSchema } from '../../utilities/schema-validator';
+import { parseSchema } from '../../utilities/schema-parser';
+import { nop } from '../../utilities/nop';
+import { Encryptor } from '../encryptors/encryptor';
+import { Hasher } from '../../utilities/hasher';
+import { isObject, isDriver, isEncryptor, isHook } from '../../utilities/is';
 
-import { fs } from '../../../utilities/fs';
-import { serialize, deserialize } from '../../../utilities/serialize';
-import { convertToBytes } from '../../../utilities/unit-converters';
-import { validateSchema } from '../../../utilities/schema-validator';
-import { parseSchema } from '../../../utilities/schema-parser';
-import { nop } from '../../../utilities/nop';
-import { Encryptor } from '../../../utilities/encryptor';
-import { Hasher } from '../../../utilities/hasher';
-import { isObject, isDriver, isEncryptor, isHook } from '../../../utilities/is';
-
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../../constant/exit-codes';
-import baseConfig from '../../../config/base';
-import validateUserConfig from '../../validators/user-config';
-import normalizeUserConfig from '../../normalizers/user-config';
-import hasFileAccess from '../../../utilities/has-file-access';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../constants/exit-codes';
+import baseConfig from '../../config/base';
+import validateUserConfig from '../validators/user-config';
+import normalizeUserConfig from '../normalizers/user-config';
+import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
 import IMetaInfo from './interfaces/meta-info';
-import { IConfigResult } from '../../normalizers/user-config';
+import { IConfigResult } from '../normalizers/user-config';
 
 
 const hasher = new Hasher();

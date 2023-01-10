@@ -1,11 +1,12 @@
 /**
- * Main DBTEX application entry point.
+ * Main DbTex application entry point.
+ *
  * @module
  */
 
-import { DbTex as _DbTex, Dbtex, UserConfig } from './components/core/dbtex';
+import { DbTex as _DbTex, IDbTex, IUserConfig } from './components/dbtex';
 
 
-export function DbTex (config: UserConfig): Dbtex {
+export function DbTex (config: IUserConfig): IDbTex {
     return new _DbTex(config);
 }

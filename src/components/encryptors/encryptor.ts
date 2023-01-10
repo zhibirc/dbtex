@@ -3,14 +3,10 @@
  * It's default encryption engine, which can be replaced with custom one.
  */
 
-// built-ins
 import crypto, { Cipher } from 'crypto';
+import IEncryptor from './interfaces/encryptor';
 
-// interfaces
-import { Encryptor as EncryptorInterface } from '../interfaces/encryptor';
-
-
-export class Encryptor implements EncryptorInterface {
+class Encryptor implements IEncryptor {
     private readonly algorithm: string;
     private readonly secretKey: string;
     private readonly initVector: Buffer;
@@ -34,3 +30,6 @@ export class Encryptor implements EncryptorInterface {
         return decipher.update(data, 'hex', 'utf8') + decipher.final('utf8');
     }
 }
+
+
+export default Encryptor;

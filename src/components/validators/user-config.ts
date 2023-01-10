@@ -15,7 +15,7 @@ import {
 } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
-import { IUserConfig } from '../core/dbtex';
+import { IUserConfig } from '../dbtex';
 
 type ValidationResult = {
     error: null | string

@@ -4,6 +4,9 @@
  * @interface
  */
 
+import ITransformer from '../../transformers/interfaces/transformer';
+import IEncryptor from '../../encryptors/interfaces/encryptor';
+
 interface IUserConfig {
     /**
      * Name for database being created.
@@ -44,6 +47,31 @@ interface IUserConfig {
      * @readonly
      */
     readonly prefix?: string | (() => string);
+
+    /**
+     * Custom encryptor.
+     * In essence, this should be an object implemented IEncryptor interface.
+     *
+     * @readonly
+     */
+    readonly encryptor?: IEncryptor;
+
+    /**
+     * Custom data transformer.
+     * In essence, this should be an object implemented ITransformer interface.
+     *
+     * @readonly
+     */
+    transformer?: ITransformer,
+
+    beforeInsert: THook,
+    afterInsert(): THook,
+    beforeSelect: THook,
+    afterSelect: THook,
+    beforeUpdate: THook,
+    afterUpdate: THook,
+    beforeDelete: THook,
+    afterDelete: THook,
 }
 
 

@@ -1,12 +1,12 @@
 // components
-import { DbTex } from '../components/core/dbtex/dbtex';
+import { DbTex } from '../components/dbtex/dbtex';
 
 // types
 import { Schema } from '../interfaces/types/schema.js';
 import { ExitCode } from '../interfaces/types/exit-code.js';
 
 // constants
-import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constant/exit-codes';
+import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../constants/exit-codes';
 
 
 export function validateSchema ( schema: Schema ): ExitCode {

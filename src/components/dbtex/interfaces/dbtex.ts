@@ -4,7 +4,7 @@
  * @interface
  */
 
-import { ITable } from '../../table/itable';
+import { Table } from '../../table/interfaces/table';
 
 interface IDbTex {
     /**
@@ -21,7 +21,7 @@ interface IDbTex {
      */
     readonly name: string;
 
-    createTable: (name: string, schema?: JSON) => ITable;
+    createTable: (name: string, schema?: JSON) => Table;
 
     dropTable: (name: string) => boolean | never;
 }

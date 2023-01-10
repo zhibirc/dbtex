@@ -1,9 +1,6 @@
-// interfaces
-import { Dsv } from '../interfaces/dsv';
+import ITransformer from './interfaces/transformer';
 
-
-// TODO: handle edge cases on read-write, think about better naming
-export class DriverCsv implements Dsv {
+class CsvTransformer implements ITransformer {
     get delimiter (): string {
         return ',';
     }
@@ -28,3 +25,6 @@ export class DriverCsv implements Dsv {
         return data.join(this.delimiter);
     }
 }
+
+
+export default CsvTransformer;

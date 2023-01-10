@@ -5,7 +5,7 @@
 
 import path from 'path';
 import { isSet } from '../../utilities/is';
-import { IUserConfig } from '../core/dbtex';
+import { IUserConfig } from '../dbtex';
 import baseConfig from '../../config/base';
 
 interface IConfigResult extends IUserConfig {

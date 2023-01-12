@@ -329,7 +329,7 @@ export default class DbTex implements IDbTex {
      *
      * @param {string} name - name of the table to drop
      *
-     * @return {boolean|} - true in case if success or an object with error reason on failure
+     * @return {boolean|Object} - true in case if success or an object with error reason on failure
      * @throws {ReferenceError}
      * @throws {AccessError}
      */

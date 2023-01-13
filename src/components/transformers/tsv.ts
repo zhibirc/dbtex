@@ -16,5 +16,4 @@ class TsvTransformer implements ITransformer {
     }
 }
 
-
 export default TsvTransformer;

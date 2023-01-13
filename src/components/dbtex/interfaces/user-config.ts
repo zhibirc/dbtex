@@ -4,8 +4,6 @@
  * @interface
  */
 
-import ITransformer from '../../transformers/interfaces/transformer';
-import IEncryptor from '../../encryptors/interfaces/encryptor';
 import THook from '../types/hook';
 
 interface IUserConfig {
@@ -19,7 +17,9 @@ interface IUserConfig {
     /**
      * Location for database being created. Usually, it's a local directory, but could be a remote resource too.
      * Could be relative or absolute path.
-     * It's an optional field, and if it's omitted, '/var/lib/dbtex' will be used as default.
+     * It's an optional field.
+     *
+     * @default '/var/lib/dbtex'
      *
      * @readonly
      */
@@ -41,6 +41,15 @@ interface IUserConfig {
     readonly encrypt?: boolean;
 
     /**
+     * Encryption key.
+     * Required only in case "encrypt" option is `true`.
+     * Isn't stored in database data, should be provided by user.
+     *
+     * @readonly
+     */
+    readonly encryptionKey?: string;
+
+    /**
      * Prefix substring for table files being created.
      * Usually, it's additional meta-information or scope indication in some form.
      * Might be a static string or a function which return the desired value, for dynamic construction.
@@ -50,20 +59,13 @@ interface IUserConfig {
     readonly prefix?: string | (() => string);
 
     /**
-     * Custom encryptor.
-     * In essence, this should be an object implemented IEncryptor interface.
-     *
-     * @readonly
-     */
-    readonly encryptor?: IEncryptor;
-
-    /**
      * Custom data transformer.
-     * In essence, this should be an object implemented ITransformer interface.
+     *
+     * @default 'csv'
      *
      * @readonly
      */
-    readonly transformer?: ITransformer | 'csv' | 'tsv';
+    readonly transformer?: 'csv' | 'tsv';
 
     readonly beforeInsert?: THook;
 
@@ -81,6 +83,5 @@ interface IUserConfig {
 
     readonly afterDelete?: THook;
 }
-
 
 export default IUserConfig;

@@ -8,11 +8,12 @@ import THook from '../types/hook';
 import TDriver from '../types/driver';
 
 interface IMetaInfoInternal {
-    location: string;
     name: string;
+    location: string;
     prefix: string;
     fileSizeLimit: number;
     encrypt: boolean;
+    encryptionKey: null;
     driver: TDriver;
     beforeInsert(): THook;
     afterInsert(): THook;

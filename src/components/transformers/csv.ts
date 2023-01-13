@@ -26,5 +26,4 @@ class CsvTransformer implements ITransformer {
     }
 }
 
-
 export default CsvTransformer;

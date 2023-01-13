@@ -4,27 +4,15 @@
  * @interface
  */
 
-import { Table } from '../../table/interfaces/table';
+import ITable from '../../table/interfaces/table';
+import IMetaInfoExternal from './meta-info-external';
 
 interface IDbTex {
-    /**
-     * Database files location.
-     *
-     * @readonly
-     */
-    readonly location: string;
+    getMetaInfo: () => IMetaInfoExternal;
 
-    /**
-     * Database name.
-     *
-     * @readonly
-     */
-    readonly name: string;
-
-    createTable: (name: string, schema?: JSON) => Table;
+    createTable: (name: string, schema?: JSON) => ITable;
 
     dropTable: (name: string) => boolean | never;
 }
-
 
 export default IDbTex;

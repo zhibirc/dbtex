@@ -3,6 +3,9 @@
  * @interface
  */
 
-export interface Table {
+interface ITable {
     name: string;
 }
+
+
+export default ITable;

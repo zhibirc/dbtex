@@ -5,10 +5,9 @@
  */
 
 import THook from '../types/hook';
+import TDriver from '../types/driver';
 
-type TDriver = 'csv' | 'tsv';
-
-interface IMetaInfo {
+interface IMetaInfoInternal {
     location: string;
     name: string;
     prefix: string;
@@ -29,5 +28,4 @@ interface IMetaInfo {
     tables: string[];
 }
 
-
-export default IMetaInfo;
+export default IMetaInfoInternal;

@@ -28,15 +28,17 @@ import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
-import IMetaInfo from './interfaces/meta-info';
+import IMetaInfoInternal from './interfaces/meta-info-internal';
+import IMetaInfoExternal from './interfaces/meta-info-external';
 import { IConfigResult } from '../normalizers/user-config';
+import ITable from '../table/interfaces/table';
 
 
 const hasher = new Hasher();
 
 
 export default class DbTex implements IDbTex {
-    #config!: IMetaInfo;
+    #config!: IMetaInfoInternal;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
@@ -67,7 +69,7 @@ export default class DbTex implements IDbTex {
                 throw new SyntaxError(error);
             }
 
-            const hash = (meta as IMetaInfo).checksum;
+            const hash = (meta as IMetaInfoInternal).checksum;
 
             delete meta.checksum;
 
@@ -249,6 +251,18 @@ export default class DbTex implements IDbTex {
         UUID: Symbol('UUID')
     };
 
+    /**
+     * Get database meta information.
+     *
+     * @return {IMetaInfoExternal} object containing meta information.
+     */
+    getMetaInfo (): IMetaInfoExternal {
+        return {
+            name: this.#config.name,
+            location: this.#config.location
+        };
+    }
+
     audit (): ExitCode {
         // stub
         return EXIT_CODE_SUCCESS;
@@ -282,7 +296,7 @@ export default class DbTex implements IDbTex {
      * @param {string} name - name for the created table
      * @param {JSON} [schema] - JSON schema for the created table
      */
-    createTable ( name: string, schema?: JSON ): Table | never {
+    createTable ( name: string, schema?: JSON ): ITable | never {
         name = this.#config.prefix + name.trim();
 
         if ( this.#config.tables.find(table => table.name === name ) ) {

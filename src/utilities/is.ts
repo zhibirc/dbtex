@@ -3,6 +3,7 @@
  */
 
 import fs from 'fs';
+import baseConfig from '../config/base';
 
 function isSet ( value: unknown ): boolean {
     return value != undefined;
@@ -25,6 +26,12 @@ function isString ( value: unknown ): boolean {
 
 function isBoolean ( value: unknown ): boolean {
     return value === true || value === false;
+}
+
+function isEncryptionKey ( value: unknown ): boolean {
+    return isNonEmptyString(value)
+        && (value as string).length >= baseConfig.ENCRYPTION_KEY_MIN_LENGTH
+        && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+$/.test(value as string); // TODO: add special symbols
 }
 
 function isNonEmptyString ( value: unknown ): boolean {
@@ -68,27 +75,27 @@ function isHook ( value: unknown ): boolean {
     return typeof value === 'function';
 }
 
-function isEncryptor (value: unknown): boolean {
-    return isObject(value) && typeof value.encrypt === 'function' && typeof value.decrypt === 'function';
-}
-
 function isDriver ( value: unknown ): boolean {
     return isObject(value) && typeof value.write === 'function' && typeof value.read === 'function';
 }
 
-
 export {
+    // checks for primitives and nominal types
     isSet,
     isObject,
     isString,
     isBoolean,
+
+    // composite checks for primitives and nominal types
     isNonEmptyString,
     isPositiveNumber,
     isLikeNumber,
+
+    // domain-specific checks
     isName,
+    isEncryptionKey,
     isPrefix,
     isDirectory,
     isHook,
-    isEncryptor,
     isDriver
 };

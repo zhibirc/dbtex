@@ -18,7 +18,7 @@ import { parseSchema } from '../../utilities/schema-parser';
 import { nop } from '../../utilities/nop';
 import Encryptor from '../encryptors/encryptor';
 import { Hasher } from '../../utilities/hasher';
-import { isObject, isDriver, isEncryptor, isHook } from '../../utilities/is';
+import { isObject, isDriver, isHook } from '../../utilities/is';
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../constants/exit-codes';
 import baseConfig from '../../config/base';
@@ -28,6 +28,7 @@ import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
+import IDbTexConfig from './interfaces/dbtex-config';
 import IMetaInfoInternal from './interfaces/meta-info-internal';
 import IMetaInfoExternal from './interfaces/meta-info-external';
 import { IConfigResult } from '../normalizers/user-config';
@@ -39,7 +40,7 @@ const hasher = new Hasher();
 
 @frozenClass
 class DbTex implements IDbTex {
-    #config!: IMetaInfoInternal;
+    #config!: IDbTexConfig;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
@@ -105,8 +106,7 @@ class DbTex implements IDbTex {
         if ( isExist ) {
             const {
                 driver,
-                encrypt,
-                encryptor
+                encrypt
             } = this.#config;
 
             const throwConfigError = <T>(value: T): never => {
@@ -131,18 +131,8 @@ class DbTex implements IDbTex {
             'report' in config && (this.#config.report = config.report === true);
             'encrypt' in config && (this.#config.encrypt = config.encrypt === true);
 
-            const isUserEncryptor = isEncryptor(config.encryptor);
-
             if ( encrypt ) {
-                if ( encryptor === FEATURE_TYPE_BOX ) {
-                    this.#config.encryptor = new Encryptor();
-                } else if ( encryptor === FEATURE_TYPE_CUSTOM ) {
-                    isUserEncryptor
-                        ? (this.#config.encryptor = new config.encryptor())
-                        : throwConfigError(config);
-                }
-            } else { // in this case we can change encryptor engine
-                isUserEncryptor && (this.#config.encryptor = new config.encryptor());
+                this.#config.encryptor = new Encryptor();
             }
 
             [
@@ -200,7 +190,6 @@ class DbTex implements IDbTex {
             prefix: <string>this.#config.prefix,
             fileSizeLimit: <number>this.#config.fileSizeLimit,
             encrypt: this.#config.encrypt,
-            encryptor: this.#config.encryptor instanceof Encryptor ? FEATURE_TYPE_BOX : FEATURE_TYPE_CUSTOM,
             driver: driver instanceof DriverCsv || driver instanceof DriverTsv
                 ? Object.getPrototypeOf(driver).constructor.name
                 : FEATURE_TYPE_CUSTOM,

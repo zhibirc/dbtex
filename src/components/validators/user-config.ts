@@ -4,6 +4,7 @@
  * @module
  */
 
+// TODO: check the order of imported members and support it in the future
 import {
     isSet,
     isObject,
@@ -11,7 +12,8 @@ import {
     isName,
     isPositiveNumber,
     isDirectory,
-    isPrefix
+    isPrefix,
+    isEncryptionKey
 } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
@@ -40,7 +42,17 @@ function validate ( value: IUserConfig ): ValidationResult {
         location,
         fileSizeLimit,
         encrypt,
-        prefix
+        encryptionKey,
+        prefix,
+        transformer,
+        beforeInsert,
+        afterInsert,
+        beforeSelect,
+        afterSelect,
+        beforeUpdate,
+        afterUpdate,
+        beforeDelete,
+        afterDelete
     } = value;
     const errors = [];
 
@@ -60,6 +72,10 @@ function validate ( value: IUserConfig ): ValidationResult {
 
     if ( isSet(encrypt) && !isBoolean(encrypt) ) {
         errors.push(`"encrypt" should be a boolean value, got ${getType(encrypt)}`);
+    }
+
+    if ( encrypt === true && !isEncryptionKey(encryptionKey) ) {
+        errors.push('encryption key should be provided if encryption is enabled');
     }
 
     if ( isSet(prefix) && !isPrefix(prefix) ) {

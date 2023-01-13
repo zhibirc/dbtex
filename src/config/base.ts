@@ -6,6 +6,7 @@ const options = {
     DATABASE_PATH: '/var/lib/dbtex',
     META_INFO_FILENAME: 'meta.json',
     FILE_SIZE_LIMIT: 2 ** 10 * 100,
+    ENCRYPTION_KEY_MIN_LENGTH: 40,
     FEATURE_TYPE_BOX: 'box',
     FEATURE_TYPE_CUSTOM: 'custom',
 };

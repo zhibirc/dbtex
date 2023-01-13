@@ -1,3 +1,6 @@
+const OFF = 0;
+const ERROR = 2;
+
 module.exports = {
     env: {
         es2021: true,
@@ -17,19 +20,18 @@ module.exports = {
         '@typescript-eslint'
     ],
     rules: {
-        indent: [
-            'error',
-            4
-        ],
-        'linebreak-style': [
-            'error',
-            'unix'
-        ],
-        quotes: [
-            'error',
-            'single'
-        ],
-        semi: "off",
-        "@typescript-eslint/semi": ["error"]
+        indent: [ERROR, 4],
+        'linebreak-style': [ERROR, 'unix'],
+        quotes: [ERROR, 'single'],
+        semi: OFF,
+        "@typescript-eslint/semi": [ERROR],
+        "@typescript-eslint/ban-types": [ERROR,
+            {
+                types: {
+                    Function: false
+                },
+                extendDefaults: true
+            }
+        ]
     }
 };

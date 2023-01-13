@@ -33,11 +33,12 @@ import IMetaInfoExternal from './interfaces/meta-info-external';
 import { IConfigResult } from '../normalizers/user-config';
 import ITable from '../table/interfaces/table';
 
+import frozenClass from '../../decorators/frozen-class';
 
 const hasher = new Hasher();
 
-
-export default class DbTex implements IDbTex {
+@frozenClass
+class DbTex implements IDbTex {
     #config!: IMetaInfoInternal;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
@@ -379,3 +380,5 @@ export default class DbTex implements IDbTex {
     //     return this.#save();
     // }
 }
+
+export default DbTex;

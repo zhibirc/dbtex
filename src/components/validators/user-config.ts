@@ -13,11 +13,13 @@ import {
     isPositiveNumber,
     isDirectory,
     isPrefix,
+    isTransformer,
     isEncryptionKey
 } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
 import { IUserConfig } from '../dbtex';
+import baseConfig from '../../config/base';
 
 type ValidationResult = {
     error: null | string
@@ -80,6 +82,10 @@ function validate ( value: IUserConfig ): ValidationResult {
 
     if ( isSet(prefix) && !isPrefix(prefix) ) {
         errors.push('"prefix" should be a non-empty string or a function returning a string');
+    }
+
+    if ( isSet(transformer) && !isTransformer(transformer) ) {
+        errors.push(`"transformer" should be one of type ${baseConfig.TRANSFORMER_SUPPORT_LIST}, got ${transformer}`);
     }
 
     return {

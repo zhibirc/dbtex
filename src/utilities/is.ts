@@ -63,6 +63,10 @@ function isPrefix ( value: unknown ): boolean {
     return false;
 }
 
+function isTransformer ( value: unknown ): boolean {
+    return baseConfig.TRANSFORMER_SUPPORT_LIST.includes(value as any);
+}
+
 function isDirectory ( value: unknown ): boolean {
     if ( !isNonEmptyString(value) ) return false;
 
@@ -95,6 +99,7 @@ export {
     isName,
     isEncryptionKey,
     isPrefix,
+    isTransformer,
     isDirectory,
     isHook,
     isDriver

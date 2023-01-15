@@ -5,6 +5,7 @@
  */
 
 import THook from '../types/hook';
+import TTransformer from '../types/transformer';
 
 interface IUserConfig {
     /**
@@ -65,7 +66,7 @@ interface IUserConfig {
      *
      * @readonly
      */
-    readonly transformer?: 'csv' | 'tsv';
+    readonly transformer?: TTransformer;
 
     readonly beforeInsert?: THook;
 

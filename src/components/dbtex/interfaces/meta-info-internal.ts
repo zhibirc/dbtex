@@ -5,7 +5,7 @@
  */
 
 import THook from '../types/hook';
-import TDriver from '../types/driver';
+import TTransformer from '../types/transformer';
 
 interface IMetaInfoInternal {
     name: string;
@@ -14,7 +14,7 @@ interface IMetaInfoInternal {
     fileSizeLimit: number;
     encrypt: boolean;
     encryptionKey: null;
-    driver: TDriver;
+    driver: TTransformer;
     beforeInsert(): THook;
     afterInsert(): THook;
     beforeSelect: THook;

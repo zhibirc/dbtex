@@ -14,7 +14,8 @@ import {
     isDirectory,
     isPrefix,
     isTransformer,
-    isEncryptionKey
+    isEncryptionKey,
+    isHook
 } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
@@ -46,15 +47,7 @@ function validate ( value: IUserConfig ): ValidationResult {
         encrypt,
         encryptionKey,
         prefix,
-        transformer,
-        beforeInsert,
-        afterInsert,
-        beforeSelect,
-        afterSelect,
-        beforeUpdate,
-        afterUpdate,
-        beforeDelete,
-        afterDelete
+        transformer
     } = value;
     const errors = [];
 
@@ -80,6 +73,10 @@ function validate ( value: IUserConfig ): ValidationResult {
         errors.push('encryption key should be provided if encryption is enabled');
     }
 
+    if ( !isSet(encrypt) || encrypt === false && isSet(encryptionKey) ) {
+        errors.push('encryption key is only required when "encrypt" is set to "true"');
+    }
+
     if ( isSet(prefix) && !isPrefix(prefix) ) {
         errors.push('"prefix" should be a non-empty string or a function returning a string');
     }
@@ -88,10 +85,26 @@ function validate ( value: IUserConfig ): ValidationResult {
         errors.push(`"transformer" should be one of type ${baseConfig.TRANSFORMER_SUPPORT_LIST}, got ${transformer}`);
     }
 
+    [
+        'beforeInsert',
+        'afterInsert',
+        'beforeSelect',
+        'afterSelect',
+        'beforeUpdate',
+        'afterUpdate',
+        'beforeDelete',
+        'afterDelete'
+    ].forEach(item => {
+        const hook = (value as {[key: string]: any})[item];
+
+        if ( isSet(hook) && !isHook(hook) ) {
+            errors.push(`"${item}" hook should be function`);
+        }
+    });
+
     return {
         error: errors.join(';\n')
     };
 }
-
 
 export default validate;

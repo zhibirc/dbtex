@@ -28,10 +28,8 @@ import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
-import IDbTexConfig from './interfaces/dbtex-config';
 import IMetaInfoInternal from './interfaces/meta-info-internal';
 import IMetaInfoExternal from './interfaces/meta-info-external';
-import { IConfigResult } from '../normalizers/user-config';
 import ITable from '../table/interfaces/table';
 
 import frozenClass from '../../decorators/frozen-class';
@@ -40,7 +38,7 @@ const hasher = new Hasher();
 
 @frozenClass
 class DbTex implements IDbTex {
-    #config!: IDbTexConfig;
+    #config!: IMetaInfoInternal;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
@@ -102,7 +100,7 @@ class DbTex implements IDbTex {
      * @param {boolean} isExist - is database already exist or new one should be created
      * @param {Object} config - initialization options for new database
      */
-    #init ( isExist: boolean, config: IMetaInfo | IConfigResult ) {
+    #init ( isExist: boolean, config: IUserConfig ) {
         if ( isExist ) {
             const {
                 driver,

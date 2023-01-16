@@ -1,3 +1,5 @@
-export function nop ( value ) {
+function nop ( value ) {
     return value;
 }
+
+export default nop;

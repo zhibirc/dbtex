@@ -48,7 +48,7 @@ interface IUserConfig {
      *
      * @readonly
      */
-    readonly encryptionKey?: string;
+    readonly encryptionKey?: string | null;
 
     /**
      * Prefix substring for table files being created.

@@ -1,4 +1,4 @@
-export function convertToBytes ( value: number | string): number {
+function convertToBytes ( value: number | string): number {
     // TODO: make these checks stricter
     if ( typeof value === 'number' ) {
         return value;
@@ -14,13 +14,14 @@ export function convertToBytes ( value: number | string): number {
         MB: 10**6,
         MIB: 2**20
     };
-    // @ts-ignore
+
     const [, prefix, suffix] = value.trim().match(/^(\d+) *([^\W\d_]{2,3})$/);
 
     // if ( !prefix || !suffix ) {
     //     return null;
     // }
 
-    // @ts-ignore
     return prefix * suffixMap[suffix];
 }
+
+export default convertToBytes;

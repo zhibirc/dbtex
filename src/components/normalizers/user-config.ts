@@ -9,6 +9,7 @@ import { isSet } from '../../utilities/is';
 import { IUserConfig } from '../dbtex';
 import baseConfig from '../../config/base';
 import nop from '../../utilities/nop';
+import convertToBytes from '../../utilities/unit-converters';
 import TTransformer from '../dbtex/types/transformer';
 
 /**
@@ -40,7 +41,7 @@ function normalize ( config: IUserConfig ): IUserConfig {
     return {
         name,
         location: isSet(location) ? path.resolve(<string>location) : baseConfig.DATABASE_PATH,
-        fileSizeLimit: fileSizeLimit ?? baseConfig.FILE_SIZE_LIMIT,
+        fileSizeLimit: convertToBytes(fileSizeLimit ?? baseConfig.FILE_SIZE_LIMIT),
         encrypt: encrypt ?? false,
         encryptionKey: encryptionKey ?? null,
         prefix: prefix ?? '',

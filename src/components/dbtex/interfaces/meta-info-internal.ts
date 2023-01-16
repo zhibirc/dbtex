@@ -14,7 +14,7 @@ interface IMetaInfoInternal {
     fileSizeLimit: number;
     encrypt: boolean;
     encryptionKey: null;
-    driver: TTransformer;
+    transformer: TTransformer;
     beforeInsert(): THook;
     afterInsert(): THook;
     beforeSelect: THook;

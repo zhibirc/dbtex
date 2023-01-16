@@ -9,13 +9,13 @@ import path from 'path';
 import { Table } from '../table/table';
 import CsvTransformer from '../transformers/csv';
 import TsvTransformer from '../transformers/tsv';
+import RecTransformer from '../transformers/rec';
 
 import { fs } from '../../utilities/fs';
 import { serialize, deserialize } from '../../utilities/serialize';
-import { convertToBytes } from '../../utilities/unit-converters';
 import { validateSchema } from '../../utilities/schema-validator';
 import { parseSchema } from '../../utilities/schema-parser';
-import { nop } from '../../utilities/nop';
+import nop from '../../utilities/nop';
 import Encryptor from '../encryptors/encryptor';
 import { Hasher } from '../../utilities/hasher';
 import { isObject, isDriver, isHook } from '../../utilities/is';
@@ -49,18 +49,19 @@ class DbTex implements IDbTex {
             throw new TypeError(`Invalid configuration: ${error}`);
         }
 
-        const { name, location, fileSizeLimit, encrypt } = normalizeUserConfig(config);
+        const normalizedConfig = normalizeUserConfig(config);
+        const { name, location } = normalizedConfig;
 
         this.#revokes = new WeakMap();
 
         // try to use existent database from persistent storage instead of creating new instance
         if ( hasFileAccess({
-            [path.join(location, name)]: [
+            [path.join(<string>location, name)]: [
                 baseConfig.META_INFO_FILENAME
             ]
         }) ) {
             const { error, data: meta } = deserialize(fs.read(path.join(
-                location,
+                <string>location,
                 name,
                 baseConfig.META_INFO_FILENAME
             )));
@@ -83,12 +84,7 @@ class DbTex implements IDbTex {
                 checksum: hash
             });
         } else {
-            this.#init(false, {
-                name,
-                location,
-                fileSizeLimit,
-                encrypt
-            });
+            this.#init(false, normalizedConfig);
         }
     }
 
@@ -125,8 +121,6 @@ class DbTex implements IDbTex {
                         : throwConfigError({driver});
             }
 
-            'log' in config && (this.#config.log = config.log === true);
-            'report' in config && (this.#config.report = config.report === true);
             'encrypt' in config && (this.#config.encrypt = config.encrypt === true);
 
             if ( encrypt ) {
@@ -147,25 +141,18 @@ class DbTex implements IDbTex {
             // re-save configuration as meta data
             this.#save();
         } else {
-            this.#config.name = config.name;
-            this.#config.location = config.location;
-            this.#config.fileSizeLimit = convertToBytes(config.fileSizeLimit);
-            this.#config.encrypt = config.encrypt;
-            this.#config.encryptor ??= new Encryptor();
-            this.#config.creationDate = Date.now();
-            this.#config.lastUpdate = Date.now();
-            this.#config.tables = [];
-            this.#config.driver = new DriverCsv();
-            this.#config.beforeInsert ??= nop;
-            this.#config.afterInsert ??= nop;
-            this.#config.beforeSelect ??= nop;
-            this.#config.afterSelect ??= nop;
-            this.#config.beforeUpdate ??= nop;
-            this.#config.afterUpdate ??= nop;
-            this.#config.beforeDelete ??= nop;
-            this.#config.afterDelete ??= nop;
-            this.#config.log = config.log === true;
-            this.#config.report = config.report === true;
+            const transformerMap = {
+                csv: () => new CsvTransformer(),
+                tsv: () => new TsvTransformer(),
+                rec: () => new RecTransformer()
+            };
+            this.#config = {
+                ...config,
+                transformer: transformerMap[<string>config.transformer](),
+                creationDate: Date.now(),
+                lastUpdate: Date.now(),
+                tables: []
+            };
 
             try {
                 fs.make(path.join(this.#config.location, this.#config.name), fs.types.DIRECTORY);

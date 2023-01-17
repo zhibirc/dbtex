@@ -13,7 +13,7 @@ class CsvTransformer implements ITransformer {
         return data.split(this.delimiter);
     }
 
-    write ( data: string | string[] | string[][] ): string {
+    write ( data: string | string[] ): string {
         if ( typeof data === 'string' ) {
             return data;
         }

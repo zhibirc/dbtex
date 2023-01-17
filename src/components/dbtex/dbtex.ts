@@ -28,17 +28,21 @@ import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
 import IUserConfig from './interfaces/user-config';
+import IDbTexConfig from './interfaces/dbtex-config';
 import IMetaInfoInternal from './interfaces/meta-info-internal';
 import IMetaInfoExternal from './interfaces/meta-info-external';
 import ITable from '../table/interfaces/table';
 
 import frozenClass from '../../decorators/frozen-class';
+import TTransformer from './types/transformer';
+import ITransformer from '../transformers/interfaces/transformer';
+import DbtexConfig from './interfaces/dbtex-config';
 
 const hasher = new Hasher();
 
 @frozenClass
 class DbTex implements IDbTex {
-    #config!: IMetaInfoInternal;
+    #config!: IDbTexConfig;
     // mapping of table proxy instances to corresponding revoke functions
     #revokes;
 
@@ -49,7 +53,7 @@ class DbTex implements IDbTex {
             throw new TypeError(`Invalid configuration: ${error}`);
         }
 
-        const normalizedConfig = normalizeUserConfig(config);
+        const normalizedConfig: IDbTexConfig = normalizeUserConfig(config);
         const { name, location } = normalizedConfig;
 
         this.#revokes = new WeakMap();
@@ -67,7 +71,7 @@ class DbTex implements IDbTex {
             )));
 
             if ( error ) {
-                throw new SyntaxError(error);
+                throw new SyntaxError(`config cannot be read or deserialize: ${error}`);
             }
 
             const hash = (meta as IMetaInfoInternal).checksum;
@@ -94,39 +98,11 @@ class DbTex implements IDbTex {
      * @private
      *
      * @param {boolean} isExist - is database already exist or new one should be created
-     * @param {Object} config - initialization options for new database
+     * @param {IUserConfig|IMetaInfoInternal} config - initialization options for new database
      */
-    #init ( isExist: boolean, config: IUserConfig ) {
+    #init ( isExist: boolean, config: IDbTexConfig | IMetaInfoInternal ) {
         if ( isExist ) {
-            const {
-                driver,
-                encrypt
-            } = this.#config;
-
-            const throwConfigError = <T>(value: T): never => {
-                throw new TypeError(`configuration error: ${value as T}`);
-            };
-
-            // if meta config says that databases uses custom driver,
-            // then user should specify an appropriate API object for this in config
-            if ( driver === FEATURE_TYPE_CUSTOM ) {
-                isDriver(config.driver)
-                    ? (this.#config.driver = new config.driver())
-                    : throwConfigError(config);
-            } else {
-                this.#config.driver = driver === DriverCsv.name
-                    ? new DriverCsv()
-                    : driver === DriverTsv.name
-                        ? new DriverTsv()
-                        : throwConfigError({driver});
-            }
-
-            'encrypt' in config && (this.#config.encrypt = config.encrypt === true);
-
-            if ( encrypt ) {
-                this.#config.encryptor = new Encryptor();
-            }
-
+            this.#config = {...normalizeUserConfig(config)};
             [
                 'beforeInsert',
                 'afterInsert',
@@ -141,18 +117,12 @@ class DbTex implements IDbTex {
             // re-save configuration as meta data
             this.#save();
         } else {
-            const transformerMap = {
-                csv: () => new CsvTransformer(),
-                tsv: () => new TsvTransformer(),
-                rec: () => new RecTransformer()
-            };
             this.#config = {
                 ...config,
-                transformer: transformerMap[<string>config.transformer](),
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
                 tables: []
-            };
+            } as Required<IDbTexConfig>;
 
             try {
                 fs.make(path.join(this.#config.location, this.#config.name), fs.types.DIRECTORY);
@@ -168,36 +138,32 @@ class DbTex implements IDbTex {
      * @private
      */
     #save () {
-        const driver = this.#config.driver;
-        const meta: Meta = {
-            directory: this.#config.directory,
+        const driver = this.#config.transformer;
+        const meta: IMetaInfoInternal = {
+            location: this.#config.location,
             name: this.#config.name,
             prefix: <string>this.#config.prefix,
             fileSizeLimit: <number>this.#config.fileSizeLimit,
             encrypt: this.#config.encrypt,
-            driver: driver instanceof DriverCsv || driver instanceof DriverTsv
-                ? Object.getPrototypeOf(driver).constructor.name
-                : FEATURE_TYPE_CUSTOM,
-            beforeInsert: this.#config.beforeInsert.toString(),
-            afterInsert:  this.#config.afterInsert.toString(),
-            beforeSelect: this.#config.beforeSelect.toString(),
-            afterSelect:  this.#config.afterSelect.toString(),
-            beforeUpdate: this.#config.beforeUpdate.toString(),
-            afterUpdate:  this.#config.afterUpdate.toString(),
-            beforeDelete: this.#config.beforeDelete.toString(),
-            afterDelete:  this.#config.afterDelete.toString(),
+            transformer: Object.getPrototypeOf(driver).constructor.name,
+            beforeInsert: this.#config.beforeInsert,
+            afterInsert:  this.#config.afterInsert,
+            beforeSelect: this.#config.beforeSelect,
+            afterSelect:  this.#config.afterSelect,
+            beforeUpdate: this.#config.beforeUpdate,
+            afterUpdate:  this.#config.afterUpdate,
+            beforeDelete: this.#config.beforeDelete,
+            afterDelete:  this.#config.afterDelete,
             creationDate: this.#config.creationDate,
             lastUpdate: this.#config.lastUpdate,
-            tables: this.#config.tables,
-            log: this.#config.log,
-            report: this.#config.report
+            tables: this.#config.tables
         };
 
         meta.checksum = hasher.hash(serialize(meta));
 
         try {
             fs.save(
-                path.join(this.location, META_INFO_FILE_NAME),
+                path.join(this.#config.location, baseConfig.META_INFO_FILENAME),
                 serialize(meta)
             );
 

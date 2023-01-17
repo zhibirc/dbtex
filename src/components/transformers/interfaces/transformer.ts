@@ -7,9 +7,9 @@
 interface ITransformer {
     readonly delimiter: string;
 
-    read: () => string[];
+    read: ( data: string | string[] ) => string[] | string[][];
 
-    write: () => string;
+    write: ( data: string | string[] ) => string;
 }
 
 

@@ -5,9 +5,15 @@ class RecTransformer implements ITransformer {
         return '\n';
     }
 
-    read ( data: string | string[] ): string[] | string[][] {}
+    read ( data: string | string[] ) {
+        // TODO: implement
+        return [];
+    }
 
-    write ( data: string | string[] | string[][] ): string {}
+    write ( data: string | string[] ) {
+        // TODO: implement
+        return '';
+    }
 }
 
 export default RecTransformer;

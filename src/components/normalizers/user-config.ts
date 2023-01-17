@@ -11,6 +11,12 @@ import baseConfig from '../../config/base';
 import nop from '../../utilities/nop';
 import convertToBytes from '../../utilities/unit-converters';
 import TTransformer from '../dbtex/types/transformer';
+import IDbTexConfig from '../dbtex/interfaces/dbtex-config';
+import ITransformer from '../transformers/interfaces/transformer';
+import CsvTransformer from '../transformers/csv';
+import TsvTransformer from '../transformers/tsv';
+import RecTransformer from '../transformers/rec';
+import Encryptor from '../encryptors/encryptor';
 
 /**
  * Normalize configuration.
@@ -19,7 +25,7 @@ import TTransformer from '../dbtex/types/transformer';
  *
  * @return {IUserConfig} normalized configuration
  */
-function normalize ( config: IUserConfig ): IUserConfig {
+function normalize ( config: IUserConfig ): IDbTexConfig {
     const {
         name,
         location,
@@ -37,15 +43,20 @@ function normalize ( config: IUserConfig ): IUserConfig {
         beforeDelete,
         afterDelete
     } = config;
+    const transformerMap: {[key: string]: () => ITransformer} = {
+        csv: () => new CsvTransformer(),
+        tsv: () => new TsvTransformer(),
+        rec: () => new RecTransformer()
+    };
 
     return {
         name,
         location: isSet(location) ? path.resolve(<string>location) : baseConfig.DATABASE_PATH,
         fileSizeLimit: convertToBytes(fileSizeLimit ?? baseConfig.FILE_SIZE_LIMIT),
         encrypt: encrypt ?? false,
-        encryptionKey: encryptionKey ?? null,
+        encryptor: encrypt ? new Encryptor(<string>encryptionKey) : null,
         prefix: prefix ?? '',
-        transformer: transformer ?? <TTransformer>baseConfig.TRANSFORMER,
+        transformer: transformerMap[transformer ?? <TTransformer>baseConfig.TRANSFORMER](),
         beforeInsert: beforeInsert ?? nop,
         afterInsert: afterInsert ?? nop,
         beforeSelect: beforeSelect ?? nop,

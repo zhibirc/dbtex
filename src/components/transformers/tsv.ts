@@ -5,12 +5,12 @@ class TsvTransformer implements ITransformer {
         return '\t';
     }
 
-    read ( data: string | string[] ): string[] | string[][] {
+    read ( data: string | string[] ) {
         // TODO: implement
         return [];
     }
 
-    write ( data: string | string[] | string[][] ): string {
+    write ( data: string | string[] ) {
         // TODO: implement
         return '';
     }

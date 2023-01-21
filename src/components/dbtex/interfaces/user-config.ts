@@ -5,7 +5,7 @@
  */
 
 import THook from '../types/hook';
-import TTransformer from '../types/transformer';
+import TFormat from '../types/format';
 
 interface IUserConfig {
     /**
@@ -66,7 +66,7 @@ interface IUserConfig {
      *
      * @readonly
      */
-    readonly format?: TTransformer;
+    readonly format?: TFormat;
 
     readonly beforeInsert?: THook;
 

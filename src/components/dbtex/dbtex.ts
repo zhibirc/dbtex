@@ -7,9 +7,7 @@
 import path from 'path';
 
 import { Table } from '../table/table';
-import CsvTransformer from '../transformers/csv';
-import TsvTransformer from '../transformers/tsv';
-import RecTransformer from '../transformers/rec';
+import ValidationError from '../errors/validation';
 
 import { fs } from '../../utilities/fs';
 import { serialize, deserialize } from '../../utilities/serialize';
@@ -17,12 +15,11 @@ import { validateSchema } from '../../utilities/schema-validator';
 import { parseSchema } from '../../utilities/schema-parser';
 
 import { Hasher } from '../../utilities/hasher';
-import {isObject, isDriver, isHook, isSet} from '../../utilities/is';
+import {isObject, isSet} from '../../utilities/is';
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../constants/exit-codes';
 import appConfig from '../../config/app';
 import validateUserConfig from '../validators/user-config';
-import normalizeUserConfig from '../normalizers/user-config';
 import hasFileAccess from '../../utilities/has-file-access';
 
 import IDbTex from './interfaces/dbtex';
@@ -32,13 +29,14 @@ import IMetaInfoInternal from './interfaces/meta-info-internal';
 import IMetaInfoExternal from './interfaces/meta-info-external';
 import ITable from '../table/interfaces/table';
 
-import frozenClass from '../../decorators/frozen-class';
-import ITransformer from '../transformers/interfaces/transformer';
-import DbtexConfig from './interfaces/dbtex-config';
+import frozen from '../../decorators/frozen';
+
+import NormalizerUserConfig from '../normalizers/user-config';
+import NormalizerMetaConfig from '../normalizers/meta-config';
 
 const hasher = new Hasher();
 
-@frozenClass
+@frozen
 class DbTex implements IDbTex {
     #config!: IDbTexConfig;
     // mapping of table proxy instances to corresponding revoke functions
@@ -48,10 +46,11 @@ class DbTex implements IDbTex {
         const { error } = validateUserConfig(config);
 
         if ( error ) {
-            throw new TypeError(`Invalid configuration: ${error}`);
+            throw new ValidationError(`invalid configuration: ${error}`);
         }
 
-        const normalizedConfig: IDbTexConfig = normalizeUserConfig(config);
+        const normalizerUserConfig = new NormalizerUserConfig(config);
+        const normalizedConfig: IDbTexConfig = normalizerUserConfig.normalize();
         const { name, location } = normalizedConfig;
 
         this.#revokes = new WeakMap();
@@ -78,15 +77,11 @@ class DbTex implements IDbTex {
 
             // verify checksum to ensure it makes sense for further initialization
             if ( !hash || !hasher.verify(serialize(meta), hash) ) {
-                throw new Error('database metadata is corrupt, checksum mismatch');
+                throw new ValidationError('database metadata is corrupt, checksum mismatch');
             }
 
-            this.#init(
-                true,
-                {...meta, checksum: hash},
-                config,
-                normalizedConfig
-            );
+            const normalizerMetaConfig = new NormalizerMetaConfig({...meta, checksum: hash}, config);
+            this.#init(true, normalizerMetaConfig.normalize());
         } else {
             this.#init(false, normalizedConfig);
         }
@@ -110,15 +105,36 @@ class DbTex implements IDbTex {
     ) {
         if ( isExist ) {
             const { prefix, fileSizeLimit, format, encrypt, encryptionKey } = rawUserConfig as Partial<IUserConfig>;
-
+            const tmpConfig = {};
             // settings which could be alternate in existing database: prefix, fileSizeLimit, format, encrypt
             const preparedConfig = {
                 name: baseConfig.name,
                 location: baseConfig.location,
                 fileSizeLimit: fileSizeLimit ? normalizedConfig?.fileSizeLimit : baseConfig.fileSizeLimit,
+                encrypt: isSet(encrypt) ? encrypt : baseConfig.encrypt,
                 prefix: isSet(prefix) ? normalizedConfig?.prefix : baseConfig.prefix,
-                // TODO
+                transformer: isSet(format) ? normalizedConfig?.transformer : (tmpConfig.format = <IMetaInfoInternal>baseConfig.format)
             };
+
+            if (
+                // if we should continue to encrypt
+                preparedConfig.encrypt
+                // we should either decrypt all or encrypt
+                || (isSet(encrypt) && baseConfig.encrypt !== encrypt)
+            ) {
+                // so, we need an encryption key
+                if ( !isSet(encryptionKey) ) {
+                    throw new ValidationError('');
+                }
+                tmpConfig.encrypt = true;
+                tmpConfig.encryptionKey = encryptionKey;
+            }
+
+
+            // check if new format is set, different from the config
+            if ( baseConfig.format !== preparedConfig.transformer.format ) {
+
+            }
 
             // do some required transformations if any
             // TODO
@@ -276,7 +292,7 @@ class DbTex implements IDbTex {
 
             return proxy;
         } catch ( error ) {
-            throw new AccessError(path.join(this.location, name));
+            throw new Error(path.join(this.location, name));
         }
     }
 

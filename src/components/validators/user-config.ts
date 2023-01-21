@@ -13,14 +13,14 @@ import {
     isPositiveNumber,
     isDirectory,
     isPrefix,
-    isTransformer,
+    isFormat,
     isEncryptionKey,
     isHook
 } from '../../utilities/is';
 import hasFileAccess from '../../utilities/has-file-access';
 import getType from '../../utilities/get-type';
 import { IUserConfig } from '../dbtex';
-import baseConfig from '../../config/base';
+import baseConfig from '../../config/app';
 
 type ValidationResult = {
     error: null | string
@@ -47,7 +47,7 @@ function validate ( value: IUserConfig ): ValidationResult {
         encrypt,
         encryptionKey,
         prefix,
-        transformer
+        format
     } = value;
     const errors = [];
 
@@ -81,8 +81,8 @@ function validate ( value: IUserConfig ): ValidationResult {
         errors.push('"prefix" should be a non-empty string or a function returning a string');
     }
 
-    if ( isSet(transformer) && !isTransformer(transformer) ) {
-        errors.push(`"transformer" should be one of type ${baseConfig.TRANSFORMER_SUPPORT_LIST}, got ${transformer}`);
+    if ( isSet(format) && !isFormat(format) ) {
+        errors.push(`unsupported format, expect one of type ${baseConfig.FORMAT_SUPPORT_LIST}`);
     }
 
     [

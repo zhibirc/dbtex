@@ -60,13 +60,13 @@ interface IUserConfig {
     readonly prefix?: string | (() => string);
 
     /**
-     * Custom data transformer.
+     * Format in which data will be stored.
      *
      * @default 'csv'
      *
      * @readonly
      */
-    readonly transformer?: TTransformer;
+    readonly format?: TTransformer;
 
     readonly beforeInsert?: THook;
 

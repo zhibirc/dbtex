@@ -4,8 +4,7 @@
  * @interface
  */
 
-import THook from '../types/hook';
-import TTransformer from '../types/transformer';
+import TFormat from '../types/format';
 
 interface IMetaInfoInternal {
     name: string;
@@ -14,15 +13,7 @@ interface IMetaInfoInternal {
     fileSizeLimit: number;
     encrypt: boolean;
     encryptionKey: null;
-    transformer: TTransformer;
-    beforeInsert(): THook;
-    afterInsert(): THook;
-    beforeSelect: THook;
-    afterSelect: THook;
-    beforeUpdate: THook;
-    afterUpdate: THook;
-    beforeDelete: THook;
-    afterDelete: THook;
+    format: TFormat;
     creationDate: number;
     lastUpdate: number;
     checksum: string;

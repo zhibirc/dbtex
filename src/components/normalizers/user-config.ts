@@ -5,12 +5,12 @@
  */
 
 import path from 'path';
-import { isSet } from '../../utilities/is';
+import {isSet, isString} from '../../utilities/is';
 import { IUserConfig } from '../dbtex';
-import baseConfig from '../../config/base';
+import baseConfig from '../../config/app';
 import nop from '../../utilities/nop';
 import convertToBytes from '../../utilities/unit-converters';
-import TTransformer from '../dbtex/types/transformer';
+import TFormat from '../dbtex/types/format';
 import IDbTexConfig from '../dbtex/interfaces/dbtex-config';
 import ITransformer from '../transformers/interfaces/transformer';
 import CsvTransformer from '../transformers/csv';
@@ -33,7 +33,7 @@ function normalize ( config: IUserConfig ): IDbTexConfig {
         encrypt,
         encryptionKey,
         prefix,
-        transformer,
+        format,
         beforeInsert,
         afterInsert,
         beforeSelect,
@@ -55,8 +55,8 @@ function normalize ( config: IUserConfig ): IDbTexConfig {
         fileSizeLimit: convertToBytes(fileSizeLimit ?? baseConfig.FILE_SIZE_LIMIT),
         encrypt: encrypt ?? false,
         encryptor: encrypt ? new Encryptor(<string>encryptionKey) : null,
-        prefix: prefix ?? '',
-        transformer: transformerMap[transformer ?? <TTransformer>baseConfig.TRANSFORMER](),
+        prefix: isSet(prefix) ? isString(prefix) ? prefix : eval(<string>prefix) : '',
+        transformer: transformerMap[format ?? <TFormat>baseConfig.DEFAULT_FORMAT](),
         beforeInsert: beforeInsert ?? nop,
         afterInsert: afterInsert ?? nop,
         beforeSelect: beforeSelect ?? nop,

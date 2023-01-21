@@ -1,6 +1,9 @@
 import ITransformer from './interfaces/transformer';
+import TFormat from '../dbtex/types/format';
 
 class CsvTransformer implements ITransformer {
+    static format: TFormat = 'csv';
+
     get delimiter (): string {
         return ',';
     }

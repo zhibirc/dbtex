@@ -51,19 +51,19 @@ function isName ( value: unknown ): boolean {
 }
 
 function isPrefix ( value: unknown ): boolean {
-    if ( isNonEmptyString(value) ) {
+    if ( isString(value) ) {
         return true;
     }
 
     if ( typeof value === 'function' ) {
         // it should return a string to be a valid table prefix "generator"
-        return isNonEmptyString(value());
+        return isString(value());
     }
 
     return false;
 }
 
-function isTransformer ( value: unknown ): boolean {
+function isFormat ( value: unknown ): boolean {
     return baseConfig.TRANSFORMER_SUPPORT_LIST.includes(value as any);
 }
 
@@ -99,7 +99,7 @@ export {
     isName,
     isEncryptionKey,
     isPrefix,
-    isTransformer,
+    isFormat,
     isDirectory,
     isHook,
     isDriver

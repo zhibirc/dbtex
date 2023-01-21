@@ -15,13 +15,12 @@ import { fs } from '../../utilities/fs';
 import { serialize, deserialize } from '../../utilities/serialize';
 import { validateSchema } from '../../utilities/schema-validator';
 import { parseSchema } from '../../utilities/schema-parser';
-import nop from '../../utilities/nop';
-import Encryptor from '../encryptors/encryptor';
+
 import { Hasher } from '../../utilities/hasher';
-import { isObject, isDriver, isHook } from '../../utilities/is';
+import {isObject, isDriver, isHook, isSet} from '../../utilities/is';
 
 import { EXIT_CODE_SUCCESS, EXIT_CODE_FAILURE } from '../../constants/exit-codes';
-import baseConfig from '../../config/base';
+import appConfig from '../../config/app';
 import validateUserConfig from '../validators/user-config';
 import normalizeUserConfig from '../normalizers/user-config';
 import hasFileAccess from '../../utilities/has-file-access';
@@ -34,7 +33,6 @@ import IMetaInfoExternal from './interfaces/meta-info-external';
 import ITable from '../table/interfaces/table';
 
 import frozenClass from '../../decorators/frozen-class';
-import TTransformer from './types/transformer';
 import ITransformer from '../transformers/interfaces/transformer';
 import DbtexConfig from './interfaces/dbtex-config';
 
@@ -61,13 +59,13 @@ class DbTex implements IDbTex {
         // try to use existent database from persistent storage instead of creating new instance
         if ( hasFileAccess({
             [path.join(<string>location, name)]: [
-                baseConfig.META_INFO_FILENAME
+                appConfig.META_INFO_FILENAME
             ]
         }) ) {
             const { error, data: meta } = deserialize(fs.read(path.join(
                 <string>location,
                 name,
-                baseConfig.META_INFO_FILENAME
+                appConfig.META_INFO_FILENAME
             )));
 
             if ( error ) {
@@ -83,10 +81,12 @@ class DbTex implements IDbTex {
                 throw new Error('database metadata is corrupt, checksum mismatch');
             }
 
-            this.#init(true, {
-                ...meta,
-                checksum: hash
-            });
+            this.#init(
+                true,
+                {...meta, checksum: hash},
+                config,
+                normalizedConfig
+            );
         } else {
             this.#init(false, normalizedConfig);
         }
@@ -98,27 +98,36 @@ class DbTex implements IDbTex {
      * @private
      *
      * @param {boolean} isExist - is database already exist or new one should be created
-     * @param {IUserConfig|IMetaInfoInternal} config - initialization options for new database
+     * @param {IUserConfig|IMetaInfoInternal} baseConfig - initialization options for new database or existing configuration
+     * @param {IUserConfig} [rawUserConfig] - original user config, needed in case of database exists
+     * @param {IDbTexConfig} [normalizedConfig] - normalized user config
      */
-    #init ( isExist: boolean, config: IDbTexConfig | IMetaInfoInternal ) {
+    #init (
+        isExist: boolean,
+        baseConfig: IDbTexConfig | IMetaInfoInternal,
+        rawUserConfig?: IUserConfig,
+        normalizedConfig?: IDbTexConfig
+    ) {
         if ( isExist ) {
-            this.#config = {...normalizeUserConfig(config)};
-            [
-                'beforeInsert',
-                'afterInsert',
-                'beforeSelect',
-                'afterSelect',
-                'beforeUpdate',
-                'afterUpdate',
-                'beforeDelete',
-                'afterDelete'
-            ].forEach(name => (this.#config[name] = isHook(config[name]) ? config[name] : eval(this.#config[name])));
+            const { prefix, fileSizeLimit, format, encrypt, encryptionKey } = rawUserConfig as Partial<IUserConfig>;
+
+            // settings which could be alternate in existing database: prefix, fileSizeLimit, format, encrypt
+            const preparedConfig = {
+                name: baseConfig.name,
+                location: baseConfig.location,
+                fileSizeLimit: fileSizeLimit ? normalizedConfig?.fileSizeLimit : baseConfig.fileSizeLimit,
+                prefix: isSet(prefix) ? normalizedConfig?.prefix : baseConfig.prefix,
+                // TODO
+            };
+
+            // do some required transformations if any
+            // TODO
 
             // re-save configuration as meta data
             this.#save();
         } else {
             this.#config = {
-                ...config,
+                ...baseConfig,
                 creationDate: Date.now(),
                 lastUpdate: Date.now(),
                 tables: []
@@ -146,14 +155,6 @@ class DbTex implements IDbTex {
             fileSizeLimit: <number>this.#config.fileSizeLimit,
             encrypt: this.#config.encrypt,
             transformer: Object.getPrototypeOf(driver).constructor.name,
-            beforeInsert: this.#config.beforeInsert,
-            afterInsert:  this.#config.afterInsert,
-            beforeSelect: this.#config.beforeSelect,
-            afterSelect:  this.#config.afterSelect,
-            beforeUpdate: this.#config.beforeUpdate,
-            afterUpdate:  this.#config.afterUpdate,
-            beforeDelete: this.#config.beforeDelete,
-            afterDelete:  this.#config.afterDelete,
             creationDate: this.#config.creationDate,
             lastUpdate: this.#config.lastUpdate,
             tables: this.#config.tables
@@ -163,7 +164,7 @@ class DbTex implements IDbTex {
 
         try {
             fs.save(
-                path.join(this.#config.location, baseConfig.META_INFO_FILENAME),
+                path.join(this.#config.location, appConfig.META_INFO_FILENAME),
                 serialize(meta)
             );
 

@@ -32,10 +32,46 @@ class NormalizerMetaConfig extends Normalizer {
     /**
      * Normalize configuration.
      *
-     * @return {IDbTexConfig} normalized configuration
+     * @return {Object} normalized configuration
      */
-    normalize (): IDbTexConfig {
-        // TODO
+    normalize (): {config: IDbTexConfig, actions: []} {
+        const actions: Function[] = [];
+        const { prefix, fileSizeLimit, format, encrypt, encryptionKey } = rawUserConfig as Partial<IUserConfig>;
+        const tmpConfig = {};
+        // settings which could be alternate in existing database: prefix, fileSizeLimit, format, encrypt
+        const preparedConfig = {
+            name: baseConfig.name,
+            location: baseConfig.location,
+            fileSizeLimit: fileSizeLimit ? normalizedConfig?.fileSizeLimit : baseConfig.fileSizeLimit,
+            encrypt: isSet(encrypt) ? encrypt : baseConfig.encrypt,
+            prefix: isSet(prefix) ? normalizedConfig?.prefix : baseConfig.prefix,
+            transformer: isSet(format) ? normalizedConfig?.transformer : (tmpConfig.format = <IMetaInfoInternal>baseConfig.format)
+        };
+
+        if (
+            // if we should continue to encrypt
+            preparedConfig.encrypt
+            // we should either decrypt all or encrypt
+            || (isSet(encrypt) && baseConfig.encrypt !== encrypt)
+        ) {
+            // so, we need an encryption key
+            if ( !isSet(encryptionKey) ) {
+                throw new ValidationError('');
+            }
+            tmpConfig.encrypt = true;
+            tmpConfig.encryptionKey = encryptionKey;
+        }
+
+
+        // check if new format is set, different from the config
+        if ( baseConfig.format !== preparedConfig.transformer.format ) {
+
+        }
+
+        return {
+            config: {},
+            actions
+        };
     }
 }
 

@@ -49,9 +49,9 @@ class DbTex implements IDbTex {
             throw new ValidationError(`invalid configuration: ${error}`);
         }
 
-        const normalizerUserConfig = new NormalizerUserConfig(config);
-        const normalizedConfig: IDbTexConfig = normalizerUserConfig.normalize();
-        const { name, location } = normalizedConfig;
+        const { normalize } = new NormalizerUserConfig(config);
+        const { config: normalizedUserConfig } = normalize();
+        const { name, location } = normalizedUserConfig;
 
         this.#revokes = new WeakMap();
 
@@ -71,7 +71,7 @@ class DbTex implements IDbTex {
                 throw new SyntaxError(`config cannot be read or deserialize: ${error}`);
             }
 
-            const hash = (meta as IMetaInfoInternal).checksum;
+            const hash = meta.checksum;
 
             delete meta.checksum;
 
@@ -80,10 +80,10 @@ class DbTex implements IDbTex {
                 throw new ValidationError('database metadata is corrupt, checksum mismatch');
             }
 
-            const normalizerMetaConfig = new NormalizerMetaConfig({...meta, checksum: hash}, config);
-            this.#init(true, normalizerMetaConfig.normalize());
+            const { normalize } = new NormalizerMetaConfig({...meta, checksum: hash}, config);
+            this.#init(true, normalize());
         } else {
-            this.#init(false, normalizedConfig);
+            this.#init(false, normalizedUserConfig);
         }
     }
 
@@ -93,48 +93,12 @@ class DbTex implements IDbTex {
      * @private
      *
      * @param {boolean} isExist - is database already exist or new one should be created
-     * @param {IUserConfig|IMetaInfoInternal} baseConfig - initialization options for new database or existing configuration
-     * @param {IUserConfig} [rawUserConfig] - original user config, needed in case of database exists
-     * @param {IDbTexConfig} [normalizedConfig] - normalized user config
+     * @param {{config: IDbTexConfig, actions: []}} data - initialization options for new database or existing configuration
+     * @param {IDbTexConfig} data.config - original user config, needed in case of database exists
      */
-    #init (
-        isExist: boolean,
-        baseConfig: IDbTexConfig | IMetaInfoInternal,
-        rawUserConfig?: IUserConfig,
-        normalizedConfig?: IDbTexConfig
-    ) {
+    #init (isExist: boolean, data: {config: IDbTexConfig, actions?: []}) {
         if ( isExist ) {
-            const { prefix, fileSizeLimit, format, encrypt, encryptionKey } = rawUserConfig as Partial<IUserConfig>;
-            const tmpConfig = {};
-            // settings which could be alternate in existing database: prefix, fileSizeLimit, format, encrypt
-            const preparedConfig = {
-                name: baseConfig.name,
-                location: baseConfig.location,
-                fileSizeLimit: fileSizeLimit ? normalizedConfig?.fileSizeLimit : baseConfig.fileSizeLimit,
-                encrypt: isSet(encrypt) ? encrypt : baseConfig.encrypt,
-                prefix: isSet(prefix) ? normalizedConfig?.prefix : baseConfig.prefix,
-                transformer: isSet(format) ? normalizedConfig?.transformer : (tmpConfig.format = <IMetaInfoInternal>baseConfig.format)
-            };
 
-            if (
-                // if we should continue to encrypt
-                preparedConfig.encrypt
-                // we should either decrypt all or encrypt
-                || (isSet(encrypt) && baseConfig.encrypt !== encrypt)
-            ) {
-                // so, we need an encryption key
-                if ( !isSet(encryptionKey) ) {
-                    throw new ValidationError('');
-                }
-                tmpConfig.encrypt = true;
-                tmpConfig.encryptionKey = encryptionKey;
-            }
-
-
-            // check if new format is set, different from the config
-            if ( baseConfig.format !== preparedConfig.transformer.format ) {
-
-            }
 
             // do some required transformations if any
             // TODO

@@ -3,7 +3,7 @@ import { IUserConfig, IDbTexConfig, IMetaInfoInternal } from '../../dbtex';
 
 interface INormalizer {
     transformerMap: {[key: string]: () => ITransformer};
-    normalize?: (config: IUserConfig) => IDbTexConfig | ((metaConfig: IMetaInfoInternal, userConfig: IUserConfig) => IDbTexConfig);
+    normalize(): {config: IDbTexConfig, actions?: Function[]}
 }
 
 export default INormalizer;
